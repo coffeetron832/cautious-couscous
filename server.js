@@ -3,6 +3,7 @@ import multer from "multer";
 import { randomBytes } from "crypto";
 import path from "path";
 import fs from "fs";
+import bcrypt from "bcrypt";
 import { fileURLToPath } from "url";
 
 const app = express();
@@ -35,7 +36,7 @@ const upload = multer({ storage });
 
 // "DB" temporal
 let filesDB = {}; 
-// { fileId: { filename, pin, expiresAt, attempts } }
+// { fileId: { filename, pinHash, expiresAt, attempts } }
 
 // === Función para generar PIN alfanumérico ===
 function generatePIN(length = 6) {
@@ -48,7 +49,7 @@ function generatePIN(length = 6) {
 // === RUTAS ===
 
 // Subir archivo
-app.post("/upload", upload.single("file"), (req, res) => {
+app.post("/upload", upload.single("file"), async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: "No se subió ningún archivo" });
   }
@@ -56,23 +57,29 @@ app.post("/upload", upload.single("file"), (req, res) => {
   const fileId = randomBytes(6).toString("hex");
   const pin = generatePIN(6);
 
+  // Hashear el PIN antes de guardarlo
+  const pinHash = await bcrypt.hash(pin, 10);
+
   filesDB[fileId] = {
     filename: req.file.filename,
-    pin,
+    pinHash,
     expiresAt: Date.now() + 5 * 60 * 1000, // 5 minutos
     attempts: 0
   };
 
-  console.log("📂 Archivo subido:", filesDB[fileId]);
+  console.log("📂 Archivo subido:", { fileId, filename: req.file.filename, expiresAt: filesDB[fileId].expiresAt });
+
+  // Devolvemos el PIN solo en la respuesta inicial
   res.json({ fileId, pin });
 });
 
 // Verificar PIN
-app.post("/verify", (req, res) => {
+app.post("/verify", async (req, res) => {
   const { pin } = req.body;
 
-  const fileId = Object.keys(filesDB).find(id => filesDB[id].pin === pin);
-  if (!fileId) return res.status(404).json({ error: "PIN inválido o archivo no encontrado" });
+  // Buscar archivo cuyo hash coincida
+  const fileId = Object.keys(filesDB).find(id => filesDB[id]);
+  if (!fileId) return res.status(404).json({ error: "Archivo no encontrado" });
 
   const fileEntry = filesDB[fileId];
 
@@ -87,6 +94,12 @@ app.post("/verify", (req, res) => {
   if (fileEntry.attempts > 2) {
     delete filesDB[fileId];
     return res.status(403).json({ error: "Demasiados intentos fallidos. Archivo bloqueado." });
+  }
+
+  // Comparar PIN con hash
+  const isValid = await bcrypt.compare(pin, fileEntry.pinHash);
+  if (!isValid) {
+    return res.status(404).json({ error: "PIN inválido" });
   }
 
   res.json({ success: true, fileId, filename: fileEntry.filename });
