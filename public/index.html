@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SecureShare - Enviar archivo</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="container">
+    <h1>SecureShare</h1>
+    <p>Comparte archivos de forma rápida y segura con PIN</p>
+
+    <!-- Formulario de subida -->
+    <form id="uploadForm">
+      <input type="file" id="fileInput" required>
+      <button type="submit">Subir archivo</button>
+    </form>
+
+    <!-- Resultado -->
+    <div id="result" class="hidden">
+      <p><strong>Enlace generado:</strong></p>
+      <p id="link"></p>
+      <p><strong>PIN de seguridad:</strong></p>
+      <p id="pin"></p>
+    </div>
+  </div>
+
+  <script src="js/upload.js"></script>
+</body>
+</html>
