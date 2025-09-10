@@ -1,0 +1,14 @@
+{
+  "name": "secure-share",
+  "version": "1.0.0",
+  "description": "Servicio rápido y seguro para compartir archivos con PIN",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "multer": "^1.4.5"
+  }
+}
