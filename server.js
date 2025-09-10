@@ -21,7 +21,7 @@ if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir);
 }
 
-// Configuración de Multer
+// Configuración de Multer para guardar archivos en /uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, uploadDir);
@@ -35,7 +35,15 @@ const upload = multer({ storage });
 
 // "DB" temporal
 let filesDB = {}; 
-// { fileId: { filename, pin, expiresAt } }
+// { fileId: { filename, pin, expiresAt, attempts } }
+
+// === Función para generar PIN alfanumérico ===
+function generatePIN(length = 6) {
+  return randomBytes(length)
+    .toString("hex")
+    .slice(0, length)
+    .toUpperCase(); // Ejemplo: "A7F2C9"
+}
 
 // === RUTAS ===
 
@@ -46,12 +54,13 @@ app.post("/upload", upload.single("file"), (req, res) => {
   }
 
   const fileId = randomBytes(6).toString("hex");
-  const pin = Math.floor(1000 + Math.random() * 9000).toString();
+  const pin = generatePIN(6);
 
   filesDB[fileId] = {
     filename: req.file.filename,
     pin,
-    expiresAt: Date.now() + 30 * 60 * 1000
+    expiresAt: Date.now() + 5 * 60 * 1000, // 5 minutos
+    attempts: 0
   };
 
   console.log("📂 Archivo subido:", filesDB[fileId]);
@@ -66,7 +75,19 @@ app.post("/verify", (req, res) => {
   if (!fileId) return res.status(404).json({ error: "PIN inválido o archivo no encontrado" });
 
   const fileEntry = filesDB[fileId];
-  if (Date.now() > fileEntry.expiresAt) return res.status(410).json({ error: "Archivo expirado" });
+
+  // Verificar expiración
+  if (Date.now() > fileEntry.expiresAt) {
+    delete filesDB[fileId];
+    return res.status(410).json({ error: "Archivo expirado" });
+  }
+
+  // Verificar intentos
+  fileEntry.attempts++;
+  if (fileEntry.attempts > 2) {
+    delete filesDB[fileId];
+    return res.status(403).json({ error: "Demasiados intentos fallidos. Archivo bloqueado." });
+  }
 
   res.json({ success: true, fileId, filename: fileEntry.filename });
 });
@@ -77,7 +98,10 @@ app.get("/download/:id", (req, res) => {
   const fileEntry = filesDB[fileId];
 
   if (!fileEntry) return res.status(404).send("Archivo no encontrado");
-  if (Date.now() > fileEntry.expiresAt) return res.status(410).send("Archivo expirado");
+  if (Date.now() > fileEntry.expiresAt) {
+    delete filesDB[fileId];
+    return res.status(410).send("Archivo expirado");
+  }
 
   const filePath = path.join(uploadDir, fileEntry.filename);
   res.download(filePath, (err) => {
