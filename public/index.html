@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SecureShare - Enviar archivo</title>
+  <title>SecureShare</title>
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
@@ -11,21 +11,35 @@
     <h1>SecureShare</h1>
     <p>Comparte archivos de forma rápida y segura con PIN</p>
 
-    <!-- Formulario de subida -->
-    <form id="uploadForm">
-      <input type="file" id="fileInput" required>
-      <button type="submit">Subir archivo</button>
-    </form>
+    <!-- Sección para subir archivo -->
+    <section id="uploadSection">
+      <h2>Subir archivo</h2>
+      <form id="uploadForm">
+        <input type="file" id="fileInput" required>
+        <button type="submit">Subir archivo</button>
+      </form>
+      <div id="uploadResult" class="hidden">
+        <p><strong>PIN generado:</strong></p>
+        <p id="generatedPin"></p>
+      </div>
+    </section>
 
-    <!-- Resultado -->
-    <div id="result" class="hidden">
-      <p><strong>Enlace generado:</strong></p>
-      <p id="link"></p>
-      <p><strong>PIN de seguridad:</strong></p>
-      <p id="pin"></p>
-    </div>
+    <hr>
+
+    <!-- Sección para recibir archivo -->
+    <section id="receiveSection">
+      <h2>Recibir archivo</h2>
+      <form id="verifyForm">
+        <input type="text" id="pinInput" placeholder="PIN de seguridad" required>
+        <button type="submit">Verificar y Descargar</button>
+      </form>
+      <div id="downloadResult" class="hidden">
+        <p id="fileInfo"></p>
+        <a id="downloadLink" class="hidden" href="#">⬇ Descargar archivo</a>
+      </div>
+    </section>
   </div>
 
-  <script src="js/upload.js"></script>
+  <script src="js/main.js"></script>
 </body>
 </html>
