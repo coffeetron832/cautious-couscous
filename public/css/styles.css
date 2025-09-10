@@ -1,0 +1,133 @@
+/* === Fuente limpia y legible === */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap");
+
+:root {
+  --bg-color: #0f1a24; /* gris azulado oscuro */
+  --card-bg: rgba(255, 255, 255, 0.08); 
+  --accent: #00e5ff; /* cian eléctrico */
+  --text-color: #e0f7fa;
+  --text-muted: #8aa1b1;
+  --border-color: rgba(255, 255, 255, 0.15);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: "Inter", sans-serif;
+}
+
+body {
+  background: var(--bg-color);
+  color: var(--text-color);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+}
+
+/* === Contenedor principal === */
+.container {
+  width: 100%;
+  max-width: 600px;
+  text-align: center;
+  padding: 2rem;
+  border-radius: 20px;
+  background: var(--card-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--border-color);
+  animation: fadeIn 0.7s ease-out;
+}
+
+/* === Títulos === */
+h1 {
+  font-size: 2.2rem;
+  margin-bottom: 0.5rem;
+  color: var(--accent);
+}
+
+h2 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  color: var(--text-color);
+}
+
+p {
+  color: var(--text-muted);
+  margin-bottom: 1.5rem;
+}
+
+/* === Inputs minimalistas === */
+input[type="file"],
+input[type="text"] {
+  width: 100%;
+  padding: 0.8rem;
+  border: none;
+  border-bottom: 2px solid var(--border-color);
+  background: transparent;
+  color: var(--text-color);
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.3s ease;
+  margin-bottom: 1rem;
+}
+
+input:focus {
+  border-bottom: 2px solid var(--accent);
+  box-shadow: 0 2px 8px rgba(0, 229, 255, 0.3);
+}
+
+/* === Botones con hover brillante === */
+button, 
+a#downloadLink {
+  display: inline-block;
+  padding: 0.8rem 1.2rem;
+  background: var(--accent);
+  border: none;
+  border-radius: 12px;
+  color: #0f1a24;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 1rem;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
+}
+
+button:hover,
+a#downloadLink:hover {
+  background: #1ef0ff;
+  box-shadow: 0 0 20px rgba(0, 229, 255, 0.9);
+  transform: translateY(-2px);
+}
+
+/* === Divider elegante === */
+hr {
+  margin: 2rem 0;
+  border: none;
+  height: 1px;
+  background: var(--border-color);
+}
+
+/* === Resultados === */
+#uploadResult, #downloadResult {
+  margin-top: 1rem;
+  padding: 1rem;
+  border-radius: 12px;
+  background: rgba(0, 229, 255, 0.05);
+  border: 1px solid var(--border-color);
+  animation: fadeIn 0.5s ease-out;
+}
+
+.hidden {
+  display: none;
+}
+
+/* === Animaciones === */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
