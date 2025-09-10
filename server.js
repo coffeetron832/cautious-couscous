@@ -52,18 +52,18 @@ app.post("/upload", upload.single("file"), (req, res) => {
 
 // 📌 Ruta para verificar PIN
 app.post("/verify", (req, res) => {
-  const { fileId, pin } = req.body;
-  const fileEntry = filesDB[fileId];
+  const { pin } = req.body;
 
-  if (!fileEntry) return res.status(404).json({ error: "Archivo no encontrado" });
+  // Buscar archivo en la "DB" por PIN
+  const fileId = Object.keys(filesDB).find(id => filesDB[id].pin === pin);
+  if (!fileId) return res.status(404).json({ error: "PIN inválido o archivo no encontrado" });
+
+  const fileEntry = filesDB[fileId];
   if (Date.now() > fileEntry.expiresAt) return res.status(410).json({ error: "Archivo expirado" });
 
-  if (fileEntry.pin === pin) {
-    res.json({ success: true, filename: fileEntry.filename });
-  } else {
-    res.status(403).json({ error: "PIN incorrecto" });
-  }
+  res.json({ success: true, fileId, filename: fileEntry.filename });
 });
+
 
 // 📌 Ruta para descargar archivo
 app.get("/download/:id", (req, res) => {
