@@ -1,0 +1,132 @@
+/* === RESET === */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Inter", sans-serif;
+}
+
+body {
+  background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+  color: #f1f1f1;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+/* === CONTENEDOR PRINCIPAL === */
+.container {
+  width: 100%;
+  max-width: 420px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 30px;
+  border-radius: 20px;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  text-align: center;
+  animation: fadeIn 0.8s ease-out;
+}
+
+/* === TITULOS === */
+h1, h2 {
+  margin-bottom: 15px;
+  font-weight: 600;
+}
+
+h1 {
+  font-size: 1.8rem;
+  color: #00f2fe;
+  text-shadow: 0 0 10px rgba(0, 242, 254, 0.6);
+}
+
+h2 {
+  font-size: 1.2rem;
+  color: #9be7ff;
+}
+
+/* === FORMULARIOS === */
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+input[type="file"],
+input[type="text"] {
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-size: 0.95rem;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+input[type="file"]::file-selector-button {
+  background: #00f2fe;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #111;
+  font-weight: 600;
+  transition: transform 0.2s ease, background 0.3s ease;
+}
+
+input[type="file"]::file-selector-button:hover {
+  transform: scale(1.05);
+  background: #00c3cc;
+}
+
+input:focus {
+  box-shadow: 0 0 10px #00f2fe;
+}
+
+/* === BOTONES === */
+button {
+  padding: 12px;
+  background: linear-gradient(135deg, #00f2fe, #4facfe);
+  border: none;
+  border-radius: 12px;
+  color: #111;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
+}
+
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 15px #00f2fe, 0 0 25px #4facfe;
+}
+
+/* === MENSAJES === */
+.message {
+  margin-top: 20px;
+  padding: 12px;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  text-align: center;
+}
+
+.message.success {
+  background: rgba(0, 255, 128, 0.1);
+  border: 1px solid #00ff80;
+  color: #00ffb3;
+}
+
+.message.error {
+  background: rgba(255, 50, 50, 0.1);
+  border: 1px solid #ff5050;
+  color: #ff8080;
+}
+
+/* === ANIMACIONES === */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
