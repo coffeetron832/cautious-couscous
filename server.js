@@ -7,14 +7,14 @@ import fs from "fs";
 const app = express();
 const PORT = 3000;
 
-// Middleware para servir archivos estáticos (public/)
+// === CONFIGURACIÓN ===
 app.use(express.static("public"));
 app.use(express.json());
 
-// Configuración de subida con Multer
+// Configuración de Multer para guardar archivos en /uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "uploads/"); // Carpeta donde se guardan los archivos
+    cb(null, "uploads/");
   },
   filename: (req, file, cb) => {
     const uniqueName = Date.now() + "-" + file.originalname;
@@ -23,38 +23,35 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-// Base temporal en memoria (puedes migrar a MongoDB luego)
+// "DB" temporal
 let filesDB = {}; 
-// Estructura: { fileId: { filename, pin, expiresAt } }
+// { fileId: { filename, pin, expiresAt } }
 
-// 📌 Ruta para subir archivo
+// === RUTAS ===
+
+// Subir archivo
 app.post("/upload", upload.single("file"), (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: "No se subió ningún archivo" });
   }
 
-  // Generar un ID único para el archivo
   const fileId = randomBytes(6).toString("hex");
-  // Generar un PIN de 4 dígitos
   const pin = Math.floor(1000 + Math.random() * 9000).toString();
 
-  // Guardar en "DB" temporal
   filesDB[fileId] = {
     filename: req.file.filename,
     pin,
-    expiresAt: Date.now() + 30 * 60 * 1000 // expira en 30 min
+    expiresAt: Date.now() + 30 * 60 * 1000
   };
 
-  console.log("Archivo subido:", filesDB[fileId]);
-
+  console.log("📂 Archivo subido:", filesDB[fileId]);
   res.json({ fileId, pin });
 });
 
-// 📌 Ruta para verificar PIN
+// Verificar PIN
 app.post("/verify", (req, res) => {
   const { pin } = req.body;
 
-  // Buscar archivo en la "DB" por PIN
   const fileId = Object.keys(filesDB).find(id => filesDB[id].pin === pin);
   if (!fileId) return res.status(404).json({ error: "PIN inválido o archivo no encontrado" });
 
@@ -64,8 +61,7 @@ app.post("/verify", (req, res) => {
   res.json({ success: true, fileId, filename: fileEntry.filename });
 });
 
-
-// 📌 Ruta para descargar archivo
+// Descargar archivo
 app.get("/download/:id", (req, res) => {
   const fileId = req.params.id;
   const fileEntry = filesDB[fileId];
@@ -76,13 +72,13 @@ app.get("/download/:id", (req, res) => {
   const filePath = path.join("uploads", fileEntry.filename);
   res.download(filePath, (err) => {
     if (!err) {
-      // Eliminar archivo después de descargar
-      fs.unlink(filePath, () => console.log("Archivo eliminado:", fileEntry.filename));
+      fs.unlink(filePath, () => console.log("🗑️ Archivo eliminado:", fileEntry.filename));
       delete filesDB[fileId];
     }
   });
 });
 
+// Iniciar servidor
 app.listen(PORT, () => {
   console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
 });
