@@ -15,22 +15,30 @@
     }
     #useCases {
       margin-top: 2rem;
-      padding: 1rem;
-      border-radius: 8px;
-      background: #f9f9f9;
+      padding: 1.5rem;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: var(--text-color);
+      text-align: left;
     }
     #useCases h2 {
-      margin-bottom: .5rem;
+      margin-bottom: .8rem;
+      color: var(--accent);
     }
     #useCases ul {
       list-style: none;
       padding: 0;
     }
     #useCases li {
-      margin: .3rem 0;
+      margin: .5rem 0;
       display: flex;
       align-items: center;
       gap: .5rem;
+      color: var(--text-muted);
+    }
+    #useCases li i {
+      color: var(--accent);
     }
     #historicalQuotes {
       margin-top: 1.5rem;
@@ -38,6 +46,7 @@
       text-align: center;
       min-height: 60px;
       transition: opacity 0.6s ease-in-out;
+      color: var(--text-color);
     }
   </style>
 </head>
@@ -71,22 +80,6 @@
       </div>
     </section>
 
-    <!-- Usos potenciales -->
-    <section id="useCases">
-      <h2>
-        <i data-lucide="lightbulb" style="width:20px;height:20px;vertical-align:middle;"></i>
-        Usos potenciales
-      </h2>
-      <ul>
-        <li><i data-lucide="file-text"></i> Compartir documentos de trabajo</li>
-        <li><i data-lucide="image"></i> Enviar fotos de forma privada</li>
-        <li><i data-lucide="lock"></i> Transferir archivos sensibles con seguridad</li>
-        <li><i data-lucide="users"></i> Colaborar en proyectos de equipo</li>
-      </ul>
-
-      <div id="historicalQuotes"></div>
-    </section>
-
     <hr>
 
     <!-- Sección para recibir archivo -->
@@ -109,6 +102,22 @@
           Descargar archivo
         </a>
       </div>
+    </section>
+
+    <!-- Usos potenciales + frases (abajo de todo) -->
+    <section id="useCases">
+      <h2>
+        <i data-lucide="lightbulb" style="width:20px;height:20px;vertical-align:middle;"></i>
+        Usos potenciales
+      </h2>
+      <ul>
+        <li><i data-lucide="file-text"></i> Compartir documentos de trabajo</li>
+        <li><i data-lucide="image"></i> Enviar fotos de forma privada</li>
+        <li><i data-lucide="lock"></i> Transferir archivos sensibles con seguridad</li>
+        <li><i data-lucide="users"></i> Colaborar en proyectos de equipo</li>
+      </ul>
+
+      <div id="historicalQuotes"></div>
     </section>
   </div>
 
