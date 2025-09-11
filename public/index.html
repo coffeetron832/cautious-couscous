@@ -7,60 +7,147 @@
   <link rel="stylesheet" href="css/styles.css">
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: var(--bg-color);
+      color: var(--text-color);
+      padding: 2rem;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      max-width: 1100px;
+      width: 100%;
+    }
+
+    .container {
+      padding: 2rem;
+      border-radius: 20px;
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--border-color);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+      animation: fadeIn 0.7s ease-out;
+    }
+
+    .testimonials {
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+    }
+
+    .testimonial {
+      padding: 1rem 1.5rem;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-color);
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      position: relative;
+    }
+
+    .testimonial strong {
+      display: block;
+      margin-top: 0.6rem;
+      color: var(--accent);
+      font-size: 0.9rem;
+    }
+
+    .testimonial i {
+      color: var(--accent);
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
 </head>
 <body>
-  <div class="container">
-    <h1>
-      <i data-lucide="shield-check" style="width:28px;height:28px;vertical-align:middle;margin-right:6px;"></i>
-      SecureShare
-    </h1>
-    <p>Comparte archivos de forma rápida y segura con PIN</p>
+  <div class="layout">
+    <!-- Columna izquierda: funciones principales -->
+    <div class="container">
+      <h1>
+        <i data-lucide="shield-check" style="width:28px;height:28px;vertical-align:middle;margin-right:6px;"></i>
+        SecureShare
+      </h1>
+      <p>Comparte archivos de forma rápida y segura con PIN</p>
 
-    <!-- Sección para subir archivo -->
-    <section id="uploadSection">
-      <h2>
-        <i data-lucide="upload" style="width:20px;height:20px;vertical-align:middle;margin-right:4px;"></i>
-        Subir archivo
-      </h2>
-      <form id="uploadForm">
-        <input type="file" id="fileInput" required>
-        <button type="submit">
-          <i data-lucide="arrow-up-circle" style="width:18px;height:18px;vertical-align:middle;margin-right:6px;"></i>
+      <!-- Sección para subir archivo -->
+      <section id="uploadSection">
+        <h2>
+          <i data-lucide="upload" style="width:20px;height:20px;vertical-align:middle;margin-right:4px;"></i>
           Subir archivo
-        </button>
-      </form>
-      <div id="uploadResult" class="hidden">
-        <p><strong>
-          <i data-lucide="key-round" style="width:18px;height:18px;vertical-align:middle;margin-right:4px;"></i>
-          PIN generado:
-        </strong></p>
-        <p id="generatedPin"></p>
-      </div>
-    </section>
+        </h2>
+        <form id="uploadForm">
+          <input type="file" id="fileInput" required>
+          <button type="submit">
+            <i data-lucide="arrow-up-circle" style="width:18px;height:18px;vertical-align:middle;margin-right:6px;"></i>
+            Subir archivo
+          </button>
+        </form>
+        <div id="uploadResult" class="hidden">
+          <p><strong>
+            <i data-lucide="key-round" style="width:18px;height:18px;vertical-align:middle;margin-right:4px;"></i>
+            PIN generado:
+          </strong></p>
+          <p id="generatedPin"></p>
+        </div>
+      </section>
 
-    <hr>
+      <hr>
 
-    <!-- Sección para recibir archivo -->
-    <section id="receiveSection">
-      <h2>
-        <i data-lucide="download" style="width:20px;height:20px;vertical-align:middle;margin-right:4px;"></i>
-        Recibir archivo
-      </h2>
-      <form id="verifyForm">
-        <input type="text" id="pinInput" placeholder="PIN de seguridad" required>
-        <button type="submit">
-          <i data-lucide="shield" style="width:18px;height:18px;vertical-align:middle;margin-right:6px;"></i>
-          Verificar y Descargar
-        </button>
-      </form>
-      <div id="downloadResult" class="hidden">
-        <p id="fileInfo"></p>
-        <a id="downloadLink" class="hidden" href="#">
-          <i data-lucide="arrow-down-circle" style="width:18px;height:18px;vertical-align:middle;margin-right:6px;"></i>
-          Descargar archivo
-        </a>
+      <!-- Sección para recibir archivo -->
+      <section id="receiveSection">
+        <h2>
+          <i data-lucide="download" style="width:20px;height:20px;vertical-align:middle;margin-right:4px;"></i>
+          Recibir archivo
+        </h2>
+        <form id="verifyForm">
+          <input type="text" id="pinInput" placeholder="PIN de seguridad" required>
+          <button type="submit">
+            <i data-lucide="shield" style="width:18px;height:18px;vertical-align:middle;margin-right:6px;"></i>
+            Verificar y Descargar
+          </button>
+        </form>
+        <div id="downloadResult" class="hidden">
+          <p id="fileInfo"></p>
+          <a id="downloadLink" class="hidden" href="#">
+            <i data-lucide="arrow-down-circle" style="width:18px;height:18px;vertical-align:middle;margin-right:6px;"></i>
+            Descargar archivo
+          </a>
+        </div>
+      </section>
+    </div>
+
+    <!-- Columna derecha: testimonios -->
+    <div class="testimonials">
+      <div class="testimonial">
+        <i data-lucide="message-square-text"></i>
+        “Gracias a SecureShare pude enviar documentos médicos de forma segura en segundos.”
+        <strong>— Laura, Bogotá</strong>
       </div>
-    </section>
+      <div class="testimonial">
+        <i data-lucide="lock"></i>
+        “Trabajo en una startup y este servicio me salvó al compartir contratos confidenciales.”
+        <strong>— Andrés, Medellín</strong>
+      </div>
+      <div class="testimonial">
+        <i data-lucide="heart"></i>
+        “Lo usé para enviar fotos familiares sin preocuparme por la privacidad. Súper útil.”
+        <strong>— Camila, Cali</strong>
+      </div>
+    </div>
   </div>
 
   <script>
