@@ -5,21 +5,30 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SecureShare</title>
   <link rel="stylesheet" href="css/styles.css">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
   <div class="container">
-    <h1>SecureShare</h1>
+    <h1>
+      <i data-lucide="shield-check"></i> SecureShare
+    </h1>
     <p>Comparte archivos de forma rápida y segura con PIN</p>
 
     <!-- Sección para subir archivo -->
     <section id="uploadSection">
-      <h2>Subir archivo</h2>
+      <h2><i data-lucide="upload"></i> Subir archivo</h2>
       <form id="uploadForm">
-        <input type="file" id="fileInput" required>
-        <button type="submit">Subir archivo</button>
+        <div class="input-group">
+          <i data-lucide="file"></i>
+          <input type="file" id="fileInput" required>
+        </div>
+        <button type="submit">
+          <i data-lucide="send"></i> Subir archivo
+        </button>
       </form>
       <div id="uploadResult" class="hidden">
-        <p><strong>PIN generado:</strong></p>
+        <p><strong><i data-lucide="key-round"></i> PIN generado:</strong></p>
         <p id="generatedPin"></p>
       </div>
     </section>
@@ -28,18 +37,28 @@
 
     <!-- Sección para recibir archivo -->
     <section id="receiveSection">
-      <h2>Recibir archivo</h2>
+      <h2><i data-lucide="download"></i> Recibir archivo</h2>
       <form id="verifyForm">
-        <input type="text" id="pinInput" placeholder="PIN de seguridad" required>
-        <button type="submit">Verificar y Descargar</button>
+        <div class="input-group">
+          <i data-lucide="lock"></i>
+          <input type="text" id="pinInput" placeholder="PIN de seguridad" required>
+        </div>
+        <button type="submit">
+          <i data-lucide="check-circle"></i> Verificar y Descargar
+        </button>
       </form>
       <div id="downloadResult" class="hidden">
         <p id="fileInfo"></p>
-        <a id="downloadLink" class="hidden" href="#">⬇ Descargar archivo</a>
+        <a id="downloadLink" class="hidden" href="#">
+          <i data-lucide="arrow-down-circle"></i> Descargar archivo
+        </a>
       </div>
     </section>
   </div>
 
+  <script>
+    lucide.createIcons();
+  </script>
   <script src="js/main.js"></script>
 </body>
 </html>
