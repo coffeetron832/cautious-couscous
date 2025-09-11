@@ -6,218 +6,136 @@
   <title>SafeSecureShare</title>
   <link rel="stylesheet" href="css/styles.css">
   <!-- Fuente Archivo -->
-  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700&display=swap" rel="stylesheet">
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
-    * {
-      font-family: "Archivo", sans-serif;
-    }
-
     body {
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-      background: var(--bg-color);
-      color: var(--text-color);
-      margin: 0;
+      font-family: 'Archivo', sans-serif;
     }
-
-    header {
-      width: 100%;
-      padding: 1rem 2rem;
-      background: rgba(255, 255, 255, 0.05);
-      border-bottom: 1px solid var(--border-color);
+    #useCases {
+      margin-top: 2rem;
+      padding: 1rem;
+      border-radius: 8px;
+      background: #f9f9f9;
+    }
+    #useCases h2 {
+      margin-bottom: .5rem;
+    }
+    #useCases ul {
+      list-style: none;
+      padding: 0;
+    }
+    #useCases li {
+      margin: .3rem 0;
       display: flex;
-      flex-direction: column;
       align-items: center;
+      gap: .5rem;
+    }
+    #historicalQuotes {
+      margin-top: 1.5rem;
+      font-style: italic;
       text-align: center;
-    }
-
-    header h1 {
-      font-size: 1.8rem;
-      margin: 0.2rem 0;
-      color: var(--accent);
-    }
-
-    header p {
-      font-size: 1rem;
-      color: var(--text-muted);
-      margin: 0;
-    }
-
-    .layout {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 2rem;
-      flex: 1;
-      max-width: 1100px;
-      margin: 2rem auto;
-      width: 100%;
-      padding: 0 1rem;
-    }
-
-    .container {
-      padding: 2rem;
-      border-radius: 20px;
-      background: var(--card-bg);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid var(--border-color);
-      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
-      animation: fadeIn 0.7s ease-out;
-    }
-
-    .testimonials {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-      padding: 2rem;
-      border-radius: 20px;
-      background: var(--card-bg);
-      border: 1px solid var(--border-color);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .testimonial {
-      position: absolute;
-      opacity: 0;
-      transition: opacity 1s ease-in-out;
-      font-size: 1rem;
-      color: var(--text-muted);
-      max-width: 90%;
-      margin: auto;
-    }
-
-    .testimonial.active {
-      opacity: 1;
-      position: relative;
-    }
-
-    .testimonial strong {
-      display: block;
-      margin-top: 0.6rem;
-      color: var(--accent);
-      font-size: 0.9rem;
-    }
-
-    .testimonial i {
-      color: var(--accent);
-      margin-right: 6px;
-      vertical-align: middle;
-    }
-
-    @media (max-width: 900px) {
-      .layout {
-        grid-template-columns: 1fr;
-      }
+      min-height: 60px;
+      transition: opacity 0.6s ease-in-out;
     }
   </style>
 </head>
 <body>
-  <!-- Header -->
-  <header>
+  <div class="container">
     <h1>
-      <i data-lucide="shield-check" style="width:26px;height:26px;vertical-align:middle;margin-right:6px;"></i>
+      <i data-lucide="shield-check" style="width:28px;height:28px;vertical-align:middle;margin-right:6px;"></i>
       SecureShare
     </h1>
     <p>Comparte archivos de forma rápida y segura con PIN</p>
-  </header>
 
-  <div class="layout">
-    <!-- Columna izquierda: funciones principales -->
-    <div class="container">
-      <!-- Sección para subir archivo -->
-      <section id="uploadSection">
-        <h2>
-          <i data-lucide="upload" style="width:20px;height:20px;vertical-align:middle;margin-right:4px;"></i>
+    <!-- Sección para subir archivo -->
+    <section id="uploadSection">
+      <h2>
+        <i data-lucide="upload" style="width:20px;height:20px;vertical-align:middle;margin-right:4px;"></i>
+        Subir archivo
+      </h2>
+      <form id="uploadForm">
+        <input type="file" id="fileInput" required>
+        <button type="submit">
+          <i data-lucide="arrow-up-circle" style="width:18px;height:18px;vertical-align:middle;margin-right:6px;"></i>
           Subir archivo
-        </h2>
-        <form id="uploadForm">
-          <input type="file" id="fileInput" required>
-          <button type="submit">
-            <i data-lucide="arrow-up-circle" style="width:18px;height:18px;vertical-align:middle;margin-right:6px;"></i>
-            Subir archivo
-          </button>
-        </form>
-        <div id="uploadResult" class="hidden">
-          <p><strong>
-            <i data-lucide="key-round" style="width:18px;height:18px;vertical-align:middle;margin-right:4px;"></i>
-            PIN generado:
-          </strong></p>
-          <p id="generatedPin"></p>
-        </div>
-      </section>
+        </button>
+      </form>
+      <div id="uploadResult" class="hidden">
+        <p><strong>
+          <i data-lucide="key-round" style="width:18px;height:18px;vertical-align:middle;margin-right:4px;"></i>
+          PIN generado:
+        </strong></p>
+        <p id="generatedPin"></p>
+      </div>
+    </section>
 
-      <hr>
+    <!-- Usos potenciales -->
+    <section id="useCases">
+      <h2>
+        <i data-lucide="lightbulb" style="width:20px;height:20px;vertical-align:middle;"></i>
+        Usos potenciales
+      </h2>
+      <ul>
+        <li><i data-lucide="file-text"></i> Compartir documentos de trabajo</li>
+        <li><i data-lucide="image"></i> Enviar fotos de forma privada</li>
+        <li><i data-lucide="lock"></i> Transferir archivos sensibles con seguridad</li>
+        <li><i data-lucide="users"></i> Colaborar en proyectos de equipo</li>
+      </ul>
 
-      <!-- Sección para recibir archivo -->
-      <section id="receiveSection">
-        <h2>
-          <i data-lucide="download" style="width:20px;height:20px;vertical-align:middle;margin-right:4px;"></i>
-          Recibir archivo
-        </h2>
-        <form id="verifyForm">
-          <input type="text" id="pinInput" placeholder="PIN de seguridad" required>
-          <button type="submit">
-            <i data-lucide="shield" style="width:18px;height:18px;vertical-align:middle;margin-right:6px;"></i>
-            Verificar y Descargar
-          </button>
-        </form>
-        <div id="downloadResult" class="hidden">
-          <p id="fileInfo"></p>
-          <a id="downloadLink" class="hidden" href="#">
-            <i data-lucide="arrow-down-circle" style="width:18px;height:18px;vertical-align:middle;margin-right:6px;"></i>
-            Descargar archivo
-          </a>
-        </div>
-      </section>
-    </div>
+      <div id="historicalQuotes"></div>
+    </section>
 
-    <!-- Columna derecha: testimonios dinámicos -->
-    <div class="testimonials">
-      <div class="testimonial active">
-        <i data-lucide="message-square-text"></i>
-        “Gracias a SecureShare pude enviar documentos médicos de forma segura en segundos.”
-        <strong>— Laura, Bogotá</strong>
+    <hr>
+
+    <!-- Sección para recibir archivo -->
+    <section id="receiveSection">
+      <h2>
+        <i data-lucide="download" style="width:20px;height:20px;vertical-align:middle;margin-right:4px;"></i>
+        Recibir archivo
+      </h2>
+      <form id="verifyForm">
+        <input type="text" id="pinInput" placeholder="PIN de seguridad" required>
+        <button type="submit">
+          <i data-lucide="shield" style="width:18px;height:18px;vertical-align:middle;margin-right:6px;"></i>
+          Verificar y Descargar
+        </button>
+      </form>
+      <div id="downloadResult" class="hidden">
+        <p id="fileInfo"></p>
+        <a id="downloadLink" class="hidden" href="#">
+          <i data-lucide="arrow-down-circle" style="width:18px;height:18px;vertical-align:middle;margin-right:6px;"></i>
+          Descargar archivo
+        </a>
       </div>
-      <div class="testimonial">
-        <i data-lucide="lock"></i>
-        “Trabajo en una startup y este servicio me salvó al compartir contratos confidenciales.”
-        <strong>— Andrés, Medellín</strong>
-      </div>
-      <div class="testimonial">
-        <i data-lucide="heart"></i>
-        “Lo usé para enviar fotos familiares sin preocuparme por la privacidad. Súper útil.”
-        <strong>— Camila, Cali</strong>
-      </div>
-      <div class="testimonial">
-        <i data-lucide="briefcase"></i>
-        “Mis clientes agradecen la seguridad extra al compartir archivos importantes.”
-        <strong>— Felipe, Barranquilla</strong>
-      </div>
-      <div class="testimonial">
-        <i data-lucide="globe"></i>
-        “Viajando por el mundo, siempre confío en SecureShare para pasar info crítica.”
-        <strong>— Mariana, Buenos Aires</strong>
-      </div>
-    </div>
+    </section>
   </div>
 
   <script>
     lucide.createIcons();
 
-    // Rotación de testimonios
-    const testimonials = document.querySelectorAll('.testimonial');
-    let index = 0;
+    // Frases históricas
+    const quotes = [
+      "“La seguridad es principalmente una superstición.” – Helen Keller",
+      "“La información quiere ser libre.” – Stewart Brand",
+      "“La confianza se gana con mil actos y se pierde con uno.” – Proverbio",
+      "“El intercambio de conocimientos es la base del progreso.” – Sócrates"
+    ];
+    let current = 0;
+    const quoteBox = document.getElementById("historicalQuotes");
 
-    setInterval(() => {
-      testimonials[index].classList.remove('active');
-      index = (index + 1) % testimonials.length;
-      testimonials[index].classList.add('active');
-    }, 7000);
+    function showQuote() {
+      quoteBox.style.opacity = 0;
+      setTimeout(() => {
+        quoteBox.textContent = quotes[current];
+        quoteBox.style.opacity = 1;
+        current = (current + 1) % quotes.length;
+      }, 600);
+    }
+
+    showQuote();
+    setInterval(showQuote, 7000);
   </script>
   <script src="js/main.js"></script>
 </body>
