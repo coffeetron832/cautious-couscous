@@ -23,14 +23,15 @@ fs.ensureFileSync(mailsFile);
 const readJSON = (file) => (fs.existsSync(file) ? fs.readJSONSync(file) : []);
 const writeJSON = (file, data) => fs.writeJSONSync(file, data, { spaces: 2 });
 
-// === Configuración Nodemailer ===
-// Usa variables de entorno para no exponer tu correo en el código
+// Configurar transporter con variables de entorno
 const transporter = nodemailer.createTransport({
-  service: "gmail", // también puede ser "outlook", "yahoo", "smtp.ethereal.email", etc.
+  host: process.env.SMTP_HOST,
+  port: process.env.SMTP_PORT,
+  secure: false, // true si usas 465
   auth: {
-    user: process.env.MAIL_USER, // tu correo real
-    pass: process.env.MAIL_PASS  // tu contraseña de aplicación
-  }
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
 });
 
 // Registro de usuario
@@ -73,34 +74,31 @@ app.get("/api/inbox/:username", (req, res) => {
   res.json(inbox);
 });
 
-// Enviar correo interno
-app.post("/api/send", (req, res) => {
+// Enviar correo interno o externo
+app.post("/api/send", async (req, res) => {
   const { from, to, subject, body } = req.body;
   const mails = readJSON(mailsFile);
 
-  const mail = { id: Date.now(), from, to, subject, body, date: new Date() };
-  mails.push(mail);
-  writeJSON(mailsFile, mails);
+  // Si es interno (@mailp.com) lo guardamos en mails.json
+  if (to.endsWith("@mailp.com")) {
+    const mail = { id: Date.now(), from, to, subject, body, date: new Date() };
+    mails.push(mail);
+    writeJSON(mailsFile, mails);
+    return res.json({ message: "Correo interno enviado", mail });
+  }
 
-  res.json({ message: "Correo interno enviado", mail });
-});
-
-// Enviar correo externo con Nodemailer
-app.post("/api/send-external", async (req, res) => {
-  const { from, to, subject, body } = req.body;
-
+  // Si es externo, lo enviamos con nodemailer
   try {
-    const info = await transporter.sendMail({
-      from: `"MailPonton" <${from}>`,
+    await transporter.sendMail({
+      from,
       to,
       subject,
-      text: body
+      text: body,
     });
-
-    res.json({ message: "Correo externo enviado", info });
+    res.json({ message: "Correo externo enviado con éxito" });
   } catch (err) {
     console.error("Error enviando correo externo:", err);
-    res.status(500).json({ error: "No se pudo enviar el correo externo" });
+    res.status(500).json({ error: "Error enviando correo externo" });
   }
 });
 
