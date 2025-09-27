@@ -66,16 +66,17 @@ if (document.getElementById("inboxList")) {
     list.innerHTML = "";
     mails.forEach((m) => {
       const li = document.createElement("li");
-      li.textContent = `De: ${m.from} | Asunto: ${m.subject} | ${m.date}`;
+      li.textContent = `📩 De: ${m.from} | Asunto: ${m.subject} | ${new Date(m.date).toLocaleString()}`;
       list.appendChild(li);
     });
   };
 
   loadInbox();
 
+  // Envío de correo (interno o externo)
   document.getElementById("sendForm").addEventListener("submit", async (e) => {
     e.preventDefault();
-    const to = e.target.to.value;
+    const to = e.target.to.value.trim();
     const subject = e.target.subject.value;
     const body = e.target.body.value;
 
@@ -92,13 +93,19 @@ if (document.getElementById("inboxList")) {
 
     const data = await res.json();
     if (res.ok) {
-      alert("Correo enviado!");
-      loadInbox();
+      if (to.endsWith("@mailp.com")) {
+        alert("📨 Correo interno enviado y guardado en bandeja.");
+        loadInbox();
+      } else {
+        alert("✉️ Correo externo enviado con éxito (no aparecerá en tu bandeja interna).");
+      }
+      e.target.reset();
     } else {
-      alert(data.error);
+      alert(data.error || "Error al enviar el correo.");
     }
   });
 
+  // Cerrar sesión
   document.getElementById("logoutBtn").addEventListener("click", () => {
     localStorage.clear();
     window.location.href = "login.html";
