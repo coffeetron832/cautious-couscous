@@ -1,4 +1,4 @@
-const API = "http://localhost:8080/api";
+const API = "https://cautious-couscous-production.up.railway.app/api";
 
 // Registro
 if (document.getElementById("registerForm")) {
