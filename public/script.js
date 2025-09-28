@@ -14,7 +14,7 @@ form.addEventListener("submit", async (e) => {
 
   const data = await res.json();
   if (res.ok) {
-    resultDiv.innerHTML = `<a href="${data.outputPath}" download>Descargar archivo convertido</a>`;
+    resultDiv.innerHTML = `<a href="${data.downloadUrl}" download>Descargar archivo convertido</a>`;
   } else {
     resultDiv.textContent = data.error;
   }
