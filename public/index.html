@@ -2,20 +2,18 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Conversor Rápido</title>
+  <title>PontonConverter - Conversor Rápido</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <h1>Conversor de Imágenes y Documentos</h1>
+  <h1>PontonConverter</h1>
+  <p>Convierte tus imágenes y documentos al instante. Selecciona un archivo y elige el formato de salida.</p>
 
   <form id="uploadForm">
     <input type="file" name="file" required>
     <select name="format" required>
       <option value="">Selecciona formato de salida</option>
-      <option value="png">PNG (imagen)</option>
-      <option value="jpg">JPG (imagen)</option>
-      <option value="webp">WEBP (imagen)</option>
-      <option value="txt">TXT (documento)</option>
+      <!-- Las opciones se llenan dinámicamente según el archivo subido -->
     </select>
     <button type="submit">Convertir</button>
   </form>
