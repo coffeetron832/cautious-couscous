@@ -39,18 +39,27 @@ app.post("/api/upload", upload.single("file"), async (req, res) => {
   const outputPath = path.join("converted", outputName);
 
   try {
+    // ✅ Conversión de imágenes sin pérdida y rotación automática
     if ([".jpg", ".jpeg", ".png", ".webp"].includes(ext)) {
-      // Imagen → Sharp
-      await sharp(file.path).toFormat(format).toFile(outputPath);
-    } else if (ext === ".pdf" && format === "txt") {
-      // PDF → TXT simple
+      let img = sharp(file.path).rotate(); // rota según EXIF
+      if (format === "jpg") {
+        await img.jpeg({ quality: 100 }).toFile(outputPath);
+      } else if (format === "png") {
+        await img.png({ compressionLevel: 0 }).toFile(outputPath); // sin pérdida
+      } else if (format === "webp") {
+        await img.webp({ quality: 100 }).toFile(outputPath);
+      }
+    }
+    // PDF → TXT
+    else if (ext === ".pdf" && format === "txt") {
       const pdfBytes = await fs.readFile(file.path);
       const pdfDoc = await pdfLib.PDFDocument.load(pdfBytes);
       let text = "";
       pdfDoc.getPages().forEach(p => { text += p.getTextContent?.() || ""; });
       await fs.writeFile(outputPath, text);
-    } else if (ext === ".docx" && format === "txt") {
-      // DOCX → TXT
+    }
+    // DOCX → TXT
+    else if (ext === ".docx" && format === "txt") {
       const { value } = await mammoth.extractRawText({ path: file.path });
       await fs.writeFile(outputPath, value);
     } else {
@@ -65,8 +74,8 @@ app.post("/api/upload", upload.single("file"), async (req, res) => {
   }
 });
 
-
-const CLEAN_INTERVAL = 5 * 60 * 1000; // 5 minutos en ms
+// Limpieza automática de archivos temporales
+const CLEAN_INTERVAL = 5 * 60 * 1000; // 5 minutos
 const TEMP_FOLDERS = ["./uploads", "./converted"];
 
 setInterval(() => {
@@ -89,6 +98,5 @@ setInterval(() => {
     });
   });
 }, CLEAN_INTERVAL);
-
 
 app.listen(PORT, () => console.log(`Servidor corriendo en http://localhost:${PORT}`));
