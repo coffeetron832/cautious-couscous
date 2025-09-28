@@ -13,6 +13,9 @@ const PORT = 8080;
 app.use(cors());
 app.use(express.static("public"));
 
+// Servir archivos convertidos
+app.use("/converted", express.static(path.join(__dirname, "converted")));
+
 fs.ensureDirSync("./uploads");
 fs.ensureDirSync("./converted");
 
@@ -44,8 +47,7 @@ app.post("/api/upload", upload.single("file"), async (req, res) => {
       const pdfBytes = await fs.readFile(file.path);
       const pdfDoc = await pdfLib.PDFDocument.load(pdfBytes);
       let text = "";
-      const pages = pdfDoc.getPages();
-      pages.forEach(p => { text += p.getTextContent?.() || ""; });
+      pdfDoc.getPages().forEach(p => { text += p.getTextContent?.() || ""; });
       await fs.writeFile(outputPath, text);
     } else if (ext === ".docx" && format === "txt") {
       // DOCX → TXT
@@ -55,7 +57,8 @@ app.post("/api/upload", upload.single("file"), async (req, res) => {
       return res.status(400).json({ error: "Conversión no soportada" });
     }
 
-    res.json({ message: "Archivo convertido", outputPath });
+    // Retornamos la ruta pública para descargar
+    res.json({ message: "Archivo convertido", downloadUrl: `/converted/${outputName}` });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Error en la conversión" });
