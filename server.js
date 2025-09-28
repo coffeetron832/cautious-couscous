@@ -65,4 +65,30 @@ app.post("/api/upload", upload.single("file"), async (req, res) => {
   }
 });
 
+
+const CLEAN_INTERVAL = 5 * 60 * 1000; // 5 minutos en ms
+const TEMP_FOLDERS = ["./uploads", "./converted"];
+
+setInterval(() => {
+  const now = Date.now();
+  TEMP_FOLDERS.forEach(folder => {
+    fs.readdir(folder, (err, files) => {
+      if (err) return console.error(err);
+      files.forEach(file => {
+        const filePath = path.join(folder, file);
+        fs.stat(filePath, (err, stats) => {
+          if (err) return console.error(err);
+          const age = now - stats.birthtimeMs;
+          if (age > CLEAN_INTERVAL) {
+            fs.unlink(filePath)
+              .then(() => console.log(`Archivo eliminado: ${filePath}`))
+              .catch(err => console.error(err));
+          }
+        });
+      });
+    });
+  });
+}, CLEAN_INTERVAL);
+
+
 app.listen(PORT, () => console.log(`Servidor corriendo en http://localhost:${PORT}`));
