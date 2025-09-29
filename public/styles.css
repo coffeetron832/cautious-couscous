@@ -94,6 +94,7 @@ button:active {
 }
 
 
+
 /* Logo animado */
 .logo {
   position: relative;
@@ -102,35 +103,29 @@ button:active {
   font-weight: bold;
   color: #4cafef;
   cursor: pointer;
-  min-width: 10ch; /* reserva un espacio mínimo */
 }
 
-/* Texto corto (visible siempre) */
+/* Texto corto (siempre visible) */
 .logo .short {
   display: inline-block;
-  transition: transform 0.5s ease, opacity 0.5s ease;
 }
 
-/* Texto largo (oculto al inicio) */
+/* Texto largo (oculto al inicio, aparece a la derecha) */
 .logo .full {
-  position: absolute;
-  left: 0;
-  top: 0;
+  display: inline-block;
   opacity: 0;
-  transform: translateX(-100%);
+  transform: translateX(-10px); /* arranca un poco encima del corto */
   transition: transform 0.5s ease, opacity 0.5s ease;
-  white-space: nowrap; /* evita que se parta en varias líneas */
+  white-space: nowrap;
+  margin-left: 5px; /* espacio entre corto y largo */
+  color: #27ae60; /* opcional, para diferenciar */
 }
 
-/* Efecto hover */
-.logo:hover .short {
-  transform: translateX(100%);
-  opacity: 0;
-}
-
+/* Efecto hover: se desprende */
 .logo:hover .full {
-  transform: translateX(0);
   opacity: 1;
+  transform: translateX(0);
 }
+
 
 
