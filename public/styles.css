@@ -95,37 +95,36 @@ button:active {
 
 
 
-/* Logo animado */
+/* Logo */
 .logo {
-  position: relative;
-  display: inline-block;
   font-size: 2rem;
   font-weight: bold;
-  color: #4cafef;
+  font-family: 'Rubik', sans-serif;
+  color: transparent;
+  background: linear-gradient(90deg, #4cafef 0%, #4cafef 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  position: relative;
   cursor: pointer;
-}
-
-/* Texto corto (siempre visible) */
-.logo .short {
   display: inline-block;
-}
-
-/* Texto largo (oculto al inicio, aparece a la derecha) */
-.logo .full {
-  display: inline-block;
-  opacity: 0;
-  transform: translateX(-10px); /* arranca un poco encima del corto */
-  transition: transform 0.5s ease, opacity 0.5s ease;
   white-space: nowrap;
-  margin-left: 5px; /* espacio entre corto y largo */
-  color: #27ae60; /* opcional, para diferenciar */
 }
 
-/* Efecto hover: se desprende */
-.logo:hover .full {
-  opacity: 1;
-  transform: translateX(0);
+/* Al inicio solo muestra "pConverter" */
+.logo::after {
+  content: "pConverter";
+  position: absolute;
+  left: 0;
+  top: 0;
+  color: #4cafef;
+  transition: content 0.5s ease;
 }
+
+/* Al pasar el mouse, el texto se "extiende" */
+.logo:hover::after {
+  content: "PontonConverter";
+}
+
 
 
 
