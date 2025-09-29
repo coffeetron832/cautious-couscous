@@ -1,89 +1,68 @@
-/* Reset básico */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+/* Importar Tiny5 desde Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Tiny5&display=swap');
 
-/* Fondo claro con contraste suave */
 body {
-  font-family: "Segoe UI", Roboto, Arial, sans-serif;
-  background: #f9fafb;
-  color: #333;
+  font-family: 'Tiny5', sans-serif;
+  background: #000;
+  color: #fff;
   max-width: 600px;
-  margin: 60px auto;
+  margin: 50px auto;
   padding: 20px;
   text-align: center;
-  line-height: 1.6;
+  position: relative;
+  overflow: hidden;
 }
 
-/* Título */
-h1 {
-  font-size: 2rem;
-  margin-bottom: 15px;
-  color: #2c3e50;
+/* --- efecto lámpara --- */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  background: radial-gradient(circle 150px at var(--x, 50%) var(--y, 50%), rgba(255,255,200,0.9), rgba(0,0,0,0.95) 80%);
+  transition: background 0.05s;
+  z-index: 0;
 }
 
-p {
-  font-size: 1rem;
-  color: #555;
-  margin-bottom: 25px;
+h1, p, form, #result {
+  position: relative;
+  z-index: 1; /* para que queden encima de la lámpara */
 }
 
-/* Inputs y select */
-input[type="file"],
-select,
-button {
+input, select, button {
   display: block;
-  margin: 12px auto;
-  padding: 12px;
-  width: 90%;
-  max-width: 400px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  font-size: 1rem;
-  transition: border 0.3s, box-shadow 0.3s;
-}
-
-input[type="file"]:focus,
-select:focus,
-button:focus {
-  outline: none;
-  border-color: #4cafef;
-  box-shadow: 0 0 5px rgba(76, 175, 239, 0.4);
-}
-
-/* Botón */
-button {
-  background: #4cafef;
-  color: #fff;
-  font-weight: bold;
+  margin: 10px auto;
+  padding: 10px;
+  width: 80%;
   border: none;
+  border-radius: 5px;
+  font-family: 'Tiny5', sans-serif;
+}
+
+button {
+  background: #0f0;
+  color: #000;
+  font-weight: bold;
   cursor: pointer;
-  transition: background 0.3s, transform 0.1s;
+  transition: transform 0.2s, background 0.3s;
 }
 
 button:hover {
-  background: #3a9bdc;
+  transform: scale(1.05);
+  background: #0c0;
 }
 
-button:active {
-  transform: scale(0.98);
-}
-
-/* Resultado de descarga */
 #result a {
-  display: inline-block;
-  margin-top: 25px;
-  padding: 10px 16px;
-  background: #27ae60;
-  color: #fff;
+  display: block;
+  margin-top: 20px;
+  color: #0f0;
   font-weight: bold;
   text-decoration: none;
-  border-radius: 5px;
-  transition: background 0.3s;
 }
 
 #result a:hover {
-  background: #219150;
+  text-decoration: underline;
 }
