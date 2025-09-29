@@ -101,40 +101,45 @@ button:active {
   font-weight: 700;
   color: #4cafef;
   cursor: pointer;
-  display: inline-block;
+  display: inline-flex; /* 🔥 mejor alineación horizontal */
+  align-items: baseline; /* alinear por la línea base */
   white-space: nowrap;
+  gap: 0; /* sin espacio extra entre spans */
 }
 
 /* la "p" siempre visible */
 .logo .first {
   display: inline-block;
+  line-height: 1; /* asegurar que no se despegue */
 }
 
 /* lo que se revela: "onton" */
 .logo .reveal {
   display: inline-block;
-  overflow: hidden;
+  line-height: 1;  /* 🔥 misma altura que la "p" */
   max-width: 0ch;
   opacity: 0;
   transform: translateX(-0.2em);
+  overflow: hidden;
   transition:
     max-width 0.5s cubic-bezier(.2,.9,.2,1),
     opacity 0.3s ease,
     transform 0.5s cubic-bezier(.2,.9,.2,1);
-  vertical-align: baseline;
 }
 
 /* el resto: "Converter" siempre visible */
 .logo .rest {
   display: inline-block;
+  line-height: 1;
 }
 
-/* Al hacer hover, se revela "onton" justo después de la "p" */
+/* Hover: aparece "onton" */
 .logo:hover .reveal {
-  max-width: 5ch;   /* 5 letras de "onton" */
+  max-width: 5ch;
   opacity: 1;
   transform: translateX(0);
 }
+
 
 
 
