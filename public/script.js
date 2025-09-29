@@ -4,6 +4,30 @@ const fileInput = document.querySelector('input[name="file"]');
 const formatSelect = document.querySelector('select[name="format"]');
 const previewDiv = document.getElementById("preview"); // div para mostrar preview
 
+
+// Calcular longitud del texto extra para usar en CSS (en ch)
+(function setupLogoReveal() {
+  const logoEl = document.querySelector('.logo');
+  if (!logoEl) return;
+  const extra = logoEl.querySelector('.extra');
+  if (!extra) return;
+
+  // calcula longitud visible (número de caracteres)
+  const len = extra.textContent.trim().length || 6;
+  // fijar CSS variable en el elemento con unidad ch
+  logoEl.style.setProperty('--len', `${len}ch`);
+
+  // opcional: para touch devices, también activar el hover al tocar
+  let touchTimeout;
+  logoEl.addEventListener('touchstart', (e) => {
+    logoEl.classList.add('hovered');
+    clearTimeout(touchTimeout);
+    touchTimeout = setTimeout(() => logoEl.classList.remove('hovered'), 1200);
+  });
+})();
+
+
+
 // Detectar tipo de archivo y actualizar opciones de formato
 fileInput.addEventListener("change", () => {
   const file = fileInput.files[0];
