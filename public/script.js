@@ -2,49 +2,69 @@ const form = document.getElementById("uploadForm");
 const resultDiv = document.getElementById("result");
 const fileInput = document.querySelector('input[name="file"]');
 const formatSelect = document.querySelector('select[name="format"]');
-const previewDiv = document.getElementById("preview"); 
-let removeFileBtn; // botón dinámico
+const previewDiv = document.getElementById("preview"); // div para mostrar preview
+const previewContainer = document.getElementById("preview-container");
 
-// Función para resetear vista previa y archivo
+// --- Crear/obtener botón de eliminar ---
+let removeFileBtn = document.getElementById("removeFileBtn");
+if (!removeFileBtn) {
+  removeFileBtn = document.createElement("button");
+  removeFileBtn.type = "button";
+  removeFileBtn.id = "removeFileBtn";
+  removeFileBtn.setAttribute("aria-label", "Quitar archivo");
+  removeFileBtn.textContent = "✕";
+  // estilo base (puedes mover esto a styles.css)
+  removeFileBtn.style.display = "none";
+  removeFileBtn.style.position = "absolute";
+  removeFileBtn.style.top = "6px";
+  removeFileBtn.style.right = "6px";
+  removeFileBtn.style.background = "#e74c3c";
+  removeFileBtn.style.color = "#fff";
+  removeFileBtn.style.border = "none";
+  removeFileBtn.style.borderRadius = "50%";
+  removeFileBtn.style.width = "28px";
+  removeFileBtn.style.height = "28px";
+  removeFileBtn.style.cursor = "pointer";
+  removeFileBtn.style.boxShadow = "0 2px 6px rgba(0,0,0,0.15)";
+  // appendar en el contenedor correcto
+  if (previewContainer) previewContainer.style.position = "relative";
+  if (previewContainer) previewContainer.appendChild(removeFileBtn);
+  else {
+    // si no existe preview-container, envuelve previewDiv y añade botón
+    const wrapper = document.createElement("div");
+    wrapper.style.position = "relative";
+    previewDiv.parentNode.insertBefore(wrapper, previewDiv);
+    wrapper.appendChild(previewDiv);
+    wrapper.appendChild(removeFileBtn);
+  }
+}
+
+// --- Función para resetear preview y formulario ---
 function resetPreview() {
   fileInput.value = "";
   previewDiv.innerHTML = "";
   formatSelect.innerHTML = '<option value="">Selecciona formato de salida</option>';
-  if (removeFileBtn) {
-    removeFileBtn.remove();
-    removeFileBtn = null;
-  }
+  resultDiv.textContent = "";
+  removeFileBtn.style.display = "none";
 }
+
+// evento del botón ❌
+removeFileBtn.addEventListener("click", resetPreview);
 
 // Detectar tipo de archivo y actualizar opciones de formato
 fileInput.addEventListener("change", () => {
   const file = fileInput.files[0];
   previewDiv.innerHTML = ""; // limpiar preview
-  if (!file) return;
+  if (!file) {
+    removeFileBtn.style.display = "none";
+    return;
+  }
+
+  // mostrar botón de eliminar
+  removeFileBtn.style.display = "block";
 
   const ext = file.name.split(".").pop().toLowerCase();
   formatSelect.innerHTML = '<option value="">Selecciona formato de salida</option>';
-
-  // Crear botón ❌ si no existe
-  if (!removeFileBtn) {
-    removeFileBtn = document.createElement("button");
-    removeFileBtn.type = "button";
-    removeFileBtn.textContent = "✕";
-    removeFileBtn.style.position = "absolute";
-    removeFileBtn.style.top = "5px";
-    removeFileBtn.style.right = "5px";
-    removeFileBtn.style.background = "#f33";
-    removeFileBtn.style.color = "#fff";
-    removeFileBtn.style.border = "none";
-    removeFileBtn.style.borderRadius = "50%";
-    removeFileBtn.style.width = "24px";
-    removeFileBtn.style.height = "24px";
-    removeFileBtn.style.cursor = "pointer";
-    removeFileBtn.style.boxShadow = "0 2px 5px rgba(0,0,0,0.3)";
-    removeFileBtn.addEventListener("click", resetPreview);
-    previewDiv.style.position = "relative"; // para posicionar el botón
-    previewDiv.appendChild(removeFileBtn);
-  }
 
   // ✅ Imágenes
   if (["jpg", "jpeg", "png", "webp"].includes(ext)) {
@@ -56,7 +76,7 @@ fileInput.addEventListener("change", () => {
       img.style.marginTop = "10px";
       img.style.border = "1px solid #ccc";
       img.style.borderRadius = "5px";
-      previewDiv.insertBefore(img, removeFileBtn);
+      previewDiv.appendChild(img);
     };
     reader.readAsDataURL(file);
 
@@ -80,7 +100,7 @@ fileInput.addEventListener("change", () => {
       embed.width = "100%";
       embed.height = "400px";
       embed.style.border = "1px solid #ccc";
-      previewDiv.insertBefore(embed, removeFileBtn);
+      previewDiv.appendChild(embed);
     };
     reader.readAsDataURL(file);
 
@@ -96,7 +116,7 @@ fileInput.addEventListener("change", () => {
   else if (ext === "docx") {
     const info = document.createElement("p");
     info.textContent = "📄 Vista previa no disponible, pero el archivo está listo para conversión.";
-    previewDiv.insertBefore(info, removeFileBtn);
+    previewDiv.appendChild(info);
 
     ["txt", "pdf"].forEach((f) => {
       const option = document.createElement("option");
@@ -118,7 +138,7 @@ fileInput.addEventListener("change", () => {
       pre.style.padding = "10px";
       pre.style.border = "1px solid #ccc";
       pre.style.borderRadius = "5px";
-      previewDiv.insertBefore(pre, removeFileBtn);
+      previewDiv.appendChild(pre);
     };
     reader.readAsText(file);
 
@@ -132,30 +152,38 @@ fileInput.addEventListener("change", () => {
 
   else {
     alert("Tipo de archivo no soportado");
-    fileInput.value = "";
-    if (removeFileBtn) {
-      removeFileBtn.remove();
-      removeFileBtn = null;
-    }
+    resetPreview();
   }
 });
 
 // Manejo del formulario para subir y convertir
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
+
+  // Si no hay archivo seleccionado, evitar enviar
+  if (!fileInput.files || fileInput.files.length === 0) {
+    alert("Primero selecciona un archivo.");
+    return;
+  }
+
   resultDiv.textContent = "Procesando...";
 
   const formData = new FormData(form);
 
-  const res = await fetch("/api/upload", {
-    method: "POST",
-    body: formData,
-  });
+  try {
+    const res = await fetch("/api/upload", {
+      method: "POST",
+      body: formData,
+    });
 
-  const data = await res.json();
-  if (res.ok) {
-    resultDiv.innerHTML = `<a href="${data.downloadUrl}" download>⬇️ Descargar archivo convertido</a>`;
-  } else {
-    resultDiv.textContent = data.error;
+    const data = await res.json();
+    if (res.ok) {
+      resultDiv.innerHTML = `<a href="${data.downloadUrl}" download>⬇️ Descargar archivo convertido</a>`;
+    } else {
+      resultDiv.textContent = data.error;
+    }
+  } catch (err) {
+    resultDiv.textContent = "Error en la subida/conversión.";
+    console.error(err);
   }
 });
