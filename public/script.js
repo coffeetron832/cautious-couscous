@@ -4,12 +4,6 @@ const fileInput = document.querySelector('input[name="file"]');
 const formatSelect = document.querySelector('select[name="format"]');
 const previewDiv = document.getElementById("preview"); // div para mostrar preview
 
-document.addEventListener("mousemove", (e) => {
-  document.body.style.setProperty("--x", e.clientX + "px");
-  document.body.style.setProperty("--y", e.clientY + "px");
-});
-
-
 // Detectar tipo de archivo y actualizar opciones de formato
 fileInput.addEventListener("change", () => {
   const file = fileInput.files[0];
