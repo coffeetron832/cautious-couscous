@@ -2,10 +2,12 @@ const form = document.getElementById("uploadForm");
 const resultDiv = document.getElementById("result");
 const fileInput = document.querySelector('input[name="file"]');
 const formatSelect = document.querySelector('select[name="format"]');
+const previewDiv = document.getElementById("preview"); // 👈 div para mostrar preview
 
 // Detectar tipo de archivo y actualizar opciones de formato
 fileInput.addEventListener("change", () => {
   const file = fileInput.files[0];
+  previewDiv.innerHTML = ""; // limpiar preview
   if (!file) return;
 
   const ext = file.name.split('.').pop().toLowerCase();
@@ -13,6 +15,20 @@ fileInput.addEventListener("change", () => {
 
   // Opciones para imágenes
   if (["jpg", "jpeg", "png", "webp"].includes(ext)) {
+    // Mostrar preview de imagen
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = document.createElement("img");
+      img.src = e.target.result;
+      img.style.maxWidth = "200px";
+      img.style.marginTop = "10px";
+      img.style.border = "1px solid #ccc";
+      img.style.borderRadius = "5px";
+      previewDiv.appendChild(img);
+    };
+    reader.readAsDataURL(file);
+
+    // Opciones de conversión para imágenes
     ["jpg", "png", "webp"].forEach(f => {
       const option = document.createElement("option");
       option.value = f;
