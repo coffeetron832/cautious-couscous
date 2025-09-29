@@ -10,11 +10,14 @@
   <p>Convierte tus imágenes y documentos al instante. Selecciona un archivo y elige el formato de salida.</p>
 
   <form id="uploadForm">
-    <input type="file" name="file" required>
-    <select name="format" required>
+    <input type="file" name="file" id="fileInput" required>
+    <div id="preview"></div> 
+    
+    <select name="format" id="formatSelect" required>
       <option value="">Selecciona formato de salida</option>
       <!-- Las opciones se llenan dinámicamente según el archivo subido -->
     </select>
+
     <button type="submit">Convertir</button>
   </form>
 
