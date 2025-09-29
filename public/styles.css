@@ -1,21 +1,89 @@
+/* Reset básico */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Fondo claro con contraste suave */
 body {
-  font-family: Arial, sans-serif;
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+  background: #f9fafb;
+  color: #333;
   max-width: 600px;
-  margin: 50px auto;
+  margin: 60px auto;
   padding: 20px;
   text-align: center;
+  line-height: 1.6;
 }
 
-input, select, button {
-  display: block;
-  margin: 10px auto;
-  padding: 10px;
-  width: 80%;
+/* Título */
+h1 {
+  font-size: 2rem;
+  margin-bottom: 15px;
+  color: #2c3e50;
 }
 
-#result a {
+p {
+  font-size: 1rem;
+  color: #555;
+  margin-bottom: 25px;
+}
+
+/* Inputs y select */
+input[type="file"],
+select,
+button {
   display: block;
-  margin-top: 20px;
-  color: green;
+  margin: 12px auto;
+  padding: 12px;
+  width: 90%;
+  max-width: 400px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: border 0.3s, box-shadow 0.3s;
+}
+
+input[type="file"]:focus,
+select:focus,
+button:focus {
+  outline: none;
+  border-color: #4cafef;
+  box-shadow: 0 0 5px rgba(76, 175, 239, 0.4);
+}
+
+/* Botón */
+button {
+  background: #4cafef;
+  color: #fff;
   font-weight: bold;
+  border: none;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.1s;
+}
+
+button:hover {
+  background: #3a9bdc;
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+/* Resultado de descarga */
+#result a {
+  display: inline-block;
+  margin-top: 25px;
+  padding: 10px 16px;
+  background: #27ae60;
+  color: #fff;
+  font-weight: bold;
+  text-decoration: none;
+  border-radius: 5px;
+  transition: background 0.3s;
+}
+
+#result a:hover {
+  background: #219150;
 }
