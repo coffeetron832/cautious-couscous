@@ -4,10 +4,13 @@
 body {
   font-family: 'Tiny5', sans-serif;
   background: #000;
-  margin: 0;
-  padding: 0;
-  text-align: center;
+  color: #fff;
   height: 100vh;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
   overflow: hidden;
   position: relative;
 }
@@ -19,7 +22,7 @@ body {
   left: 50%;
   transform: translateX(-50%);
   height: 200px;
-  width: 6px;
+  width: 10px;
   background: #333;
   z-index: 3;
 }
@@ -37,7 +40,7 @@ body {
   box-shadow: 0 0 20px 10px rgba(255, 240, 150, 0.8);
 }
 
-/* --- el halo de luz que “revela” el texto --- */
+/* --- luz proyectada --- */
 .light {
   position: absolute;
   top: 180px;
@@ -45,71 +48,31 @@ body {
   transform: translateX(-50%);
   width: 800px;
   height: 800px;
-  background: radial-gradient(circle at center top,
-              rgba(255, 255, 200, 1) 0%,
-              rgba(0, 0, 0, 0) 60%);
+  background: radial-gradient(circle at center top, rgba(255, 255, 200, 0.8), rgba(0, 0, 0, 0.95) 70%);
   border-radius: 50%;
-  filter: blur(120px);
+  filter: blur(60px);
   pointer-events: none;
   z-index: 2;
   animation: swing 5s ease-in-out infinite alternate;
-  mix-blend-mode: lighten;
 }
 
-/* --- movimiento de columpio --- */
+/* --- movimiento realista de columpio --- */
 @keyframes swing {
   0% { transform: translateX(-50%) rotate(-3deg); }
   100% { transform: translateX(-50%) rotate(3deg); }
 }
 
-/* --- capa del texto que solo se ve con la luz --- */
+/* --- contenedor del texto --- */
 .content {
   position: relative;
-  z-index: 1;
-  color: white;
-  font-size: 1.2rem;
-  mix-blend-mode: difference; /* el truco */
-  opacity: 0.9;
-}
+  z-index: 4;
+  margin-top: 250px; /* justo debajo de la lámpara */
+  text-align: center;
+  width: 100%;
+  font-size: 1.5rem;
 
-h1 {
-  font-size: 2.5rem;
-  margin-top: 250px;
-}
-
-input, select, button {
-  display: block;
-  margin: 10px auto;
-  padding: 10px;
-  width: 80%;
-  border: none;
-  border-radius: 5px;
-  font-family: 'Tiny5', sans-serif;
-  background: rgba(255,255,255,0.1);
-  color: #fff;
-}
-
-button {
-  background: #0f0;
-  color: #000;
-  font-weight: bold;
-  cursor: pointer;
-  transition: transform 0.2s, background 0.3s;
-}
-
-button:hover {
-  transform: scale(1.05);
-  background: #0c0;
-}
-
-#result a {
-  display: block;
-  margin-top: 20px;
-  color: #0f0;
-  font-weight: bold;
-  text-decoration: none;
-}
-
-#result a:hover {
-  text-decoration: underline;
+  /* 🔥 aquí la magia: texto visible solo donde hay luz */
+  background: radial-gradient(circle at center top, rgba(255,255,255,1) 30%, rgba(0,0,0,0) 70%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
