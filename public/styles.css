@@ -108,27 +108,28 @@ button:active {
 /* Texto corto (visible siempre) */
 .logo .short {
   display: inline-block;
-  transition: transform 0.4s ease, opacity 0.4s ease;
+  transition: transform 0.5s ease, opacity 0.5s ease;
 }
 
-/* Texto largo (oculto por defecto) */
+/* Texto largo (oculto al inicio) */
 .logo .full {
   position: absolute;
   left: 0;
   top: 0;
   opacity: 0;
-  transform: translateY(100%);
-  transition: transform 0.4s ease, opacity 0.4s ease;
+  transform: translateX(-100%);
+  transition: transform 0.5s ease, opacity 0.5s ease;
   white-space: nowrap;
 }
 
 /* Efecto hover */
 .logo:hover .short {
-  transform: translateY(-100%);
+  transform: translateX(100%);
   opacity: 0;
 }
 
 .logo:hover .full {
-  transform: translateY(0);
+  transform: translateX(0);
   opacity: 1;
 }
+
