@@ -26,7 +26,7 @@ fileInput.addEventListener("change", () => {
     return;
   }
 
-  removeFileBtn.style.display = "block"; // mostrar botón ❌
+  removeFileBtn.style.display = "inline-block";
 
   const ext = file.name.split(".").pop().toLowerCase();
   formatSelect.innerHTML = '<option value="">Selecciona formato de salida</option>';
