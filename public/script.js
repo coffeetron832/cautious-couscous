@@ -2,7 +2,19 @@ const form = document.getElementById("uploadForm");
 const resultDiv = document.getElementById("result");
 const fileInput = document.querySelector('input[name="file"]');
 const formatSelect = document.querySelector('select[name="format"]');
-const previewDiv = document.getElementById("preview"); // div para mostrar preview
+const previewDiv = document.getElementById("preview"); 
+let removeFileBtn; // botón dinámico
+
+// Función para resetear vista previa y archivo
+function resetPreview() {
+  fileInput.value = "";
+  previewDiv.innerHTML = "";
+  formatSelect.innerHTML = '<option value="">Selecciona formato de salida</option>';
+  if (removeFileBtn) {
+    removeFileBtn.remove();
+    removeFileBtn = null;
+  }
+}
 
 // Detectar tipo de archivo y actualizar opciones de formato
 fileInput.addEventListener("change", () => {
@@ -12,6 +24,27 @@ fileInput.addEventListener("change", () => {
 
   const ext = file.name.split(".").pop().toLowerCase();
   formatSelect.innerHTML = '<option value="">Selecciona formato de salida</option>';
+
+  // Crear botón ❌ si no existe
+  if (!removeFileBtn) {
+    removeFileBtn = document.createElement("button");
+    removeFileBtn.type = "button";
+    removeFileBtn.textContent = "✕";
+    removeFileBtn.style.position = "absolute";
+    removeFileBtn.style.top = "5px";
+    removeFileBtn.style.right = "5px";
+    removeFileBtn.style.background = "#f33";
+    removeFileBtn.style.color = "#fff";
+    removeFileBtn.style.border = "none";
+    removeFileBtn.style.borderRadius = "50%";
+    removeFileBtn.style.width = "24px";
+    removeFileBtn.style.height = "24px";
+    removeFileBtn.style.cursor = "pointer";
+    removeFileBtn.style.boxShadow = "0 2px 5px rgba(0,0,0,0.3)";
+    removeFileBtn.addEventListener("click", resetPreview);
+    previewDiv.style.position = "relative"; // para posicionar el botón
+    previewDiv.appendChild(removeFileBtn);
+  }
 
   // ✅ Imágenes
   if (["jpg", "jpeg", "png", "webp"].includes(ext)) {
@@ -23,7 +56,7 @@ fileInput.addEventListener("change", () => {
       img.style.marginTop = "10px";
       img.style.border = "1px solid #ccc";
       img.style.borderRadius = "5px";
-      previewDiv.appendChild(img);
+      previewDiv.insertBefore(img, removeFileBtn);
     };
     reader.readAsDataURL(file);
 
@@ -47,7 +80,7 @@ fileInput.addEventListener("change", () => {
       embed.width = "100%";
       embed.height = "400px";
       embed.style.border = "1px solid #ccc";
-      previewDiv.appendChild(embed);
+      previewDiv.insertBefore(embed, removeFileBtn);
     };
     reader.readAsDataURL(file);
 
@@ -63,7 +96,7 @@ fileInput.addEventListener("change", () => {
   else if (ext === "docx") {
     const info = document.createElement("p");
     info.textContent = "📄 Vista previa no disponible, pero el archivo está listo para conversión.";
-    previewDiv.appendChild(info);
+    previewDiv.insertBefore(info, removeFileBtn);
 
     ["txt", "pdf"].forEach((f) => {
       const option = document.createElement("option");
@@ -85,7 +118,7 @@ fileInput.addEventListener("change", () => {
       pre.style.padding = "10px";
       pre.style.border = "1px solid #ccc";
       pre.style.borderRadius = "5px";
-      previewDiv.appendChild(pre);
+      previewDiv.insertBefore(pre, removeFileBtn);
     };
     reader.readAsText(file);
 
@@ -100,6 +133,10 @@ fileInput.addEventListener("change", () => {
   else {
     alert("Tipo de archivo no soportado");
     fileInput.value = "";
+    if (removeFileBtn) {
+      removeFileBtn.remove();
+      removeFileBtn = null;
+    }
   }
 });
 
