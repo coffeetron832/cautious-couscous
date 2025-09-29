@@ -95,55 +95,47 @@ button:active {
 
 
 
-/* Logo "desprendible" (preparado para tema oscuro) */
 .logo {
-  display: inline-block;
-  position: relative;
+  font-family: 'Rubik', sans-serif;
   font-size: 2rem;
   font-weight: 700;
   color: #4cafef;
   cursor: pointer;
-  line-height: 1;
-  /* evita que el layout salte bruscamente: transición suave del contenedor */
-  transition: width .35s ease;
+  display: inline-block;
   white-space: nowrap;
 }
 
-/* parte que se añade (Ponton) — empieza oculta (max-width:0) */
-.logo .extra {
+/* la "p" siempre visible */
+.logo .first {
   display: inline-block;
-  vertical-align: middle;
+}
+
+/* lo que se revela: "onton" */
+.logo .reveal {
+  display: inline-block;
   overflow: hidden;
-  max-width: 0ch;              /* será expandido a --len (en ch) por JS/CSS */
+  max-width: 0ch;
   opacity: 0;
-  transform-origin: left center;
+  transform: translateX(-0.2em);
   transition:
-    max-width 420ms cubic-bezier(.2,.9,.2,1),
-    opacity 260ms ease,
-    transform 420ms cubic-bezier(.2,.9,.2,1);
-  /* opcional: suaviza la aparición con letter-spacing */
-  letter-spacing: 0.02em;
+    max-width 0.5s cubic-bezier(.2,.9,.2,1),
+    opacity 0.3s ease,
+    transform 0.5s cubic-bezier(.2,.9,.2,1);
+  vertical-align: baseline;
 }
 
-/* la parte base (pConverter) visible siempre */
-.logo .base {
+/* el resto: "Converter" siempre visible */
+.logo .rest {
   display: inline-block;
-  vertical-align: middle;
-  transition: transform 420ms cubic-bezier(.2,.9,.2,1);
 }
 
-/* Hover: expandir la parte extra desde la izquierda, hacerla visible */
-.logo:hover .extra {
-  /* --len será una variable CSS con valor tipo "6ch" establecida por JS */
-  max-width: var(--len, 6ch);
+/* Al hacer hover, se revela "onton" justo después de la "p" */
+.logo:hover .reveal {
+  max-width: 5ch;   /* 5 letras de "onton" */
   opacity: 1;
   transform: translateX(0);
 }
 
-/* Para un regreso más fluido al quitar hover */
-.logo:not(:hover) .extra {
-  transform: translateX(-6%);
-}
 
 
 
