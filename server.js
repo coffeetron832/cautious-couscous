@@ -3,11 +3,11 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs-extra");
 const sharp = require("sharp");
+const pdfLib = require("pdf-lib");
 const mammoth = require("mammoth");
 const cors = require("cors");
 const { Document, Packer, Paragraph } = require("docx");
 const { PDFDocument } = require("pdf-lib");
-const pdfParse = require("pdf-parse"); // 👈 librería para leer texto de PDFs
 
 const app = express();
 const PORT = 8080;
@@ -40,54 +40,59 @@ app.post("/api/upload", upload.single("file"), async (req, res) => {
   if (!file) return res.status(400).json({ error: "No se subió archivo" });
 
   const ext = path.extname(file.originalname).toLowerCase();
-  const outputName = `${Date.now()}_converted.${format}`;
+  const baseName = path.basename(file.originalname, ext); // nombre base del archivo
+  const outputName = `${baseName}_PontonConverter.${format}`;
   const outputPath = path.join("converted", outputName);
 
   try {
-    // ✅ Conversión de imágenes
+    // ✅ Conversión de imágenes sin pérdida y rotación automática
     if ([".jpg", ".jpeg", ".png", ".webp"].includes(ext)) {
       let img = sharp(file.path).rotate(); // rota según EXIF
       if (format === "jpg") {
         await img.jpeg({ quality: 100 }).toFile(outputPath);
       } else if (format === "png") {
-        await img.png({ compressionLevel: 0 }).toFile(outputPath);
+        await img.png({ compressionLevel: 0 }).toFile(outputPath); // sin pérdida
       } else if (format === "webp") {
         await img.webp({ quality: 100 }).toFile(outputPath);
       }
     }
-
-    // ✅ PDF → TXT
+    // PDF → TXT
     else if (ext === ".pdf" && format === "txt") {
-      const dataBuffer = await fs.readFile(file.path);
-      const pdfData = await pdfParse(dataBuffer);
-      await fs.writeFile(outputPath, pdfData.text, "utf8");
+      const pdfBytes = await fs.readFile(file.path);
+      const pdfDoc = await pdfLib.PDFDocument.load(pdfBytes);
+      let text = "";
+      pdfDoc.getPages().forEach(p => {
+        text += p.getTextContent?.() || "";
+      });
+      await fs.writeFile(outputPath, text);
     }
-
-    // ✅ DOCX → TXT
+    // DOCX → TXT
     else if (ext === ".docx" && format === "txt") {
       const { value } = await mammoth.extractRawText({ path: file.path });
-      await fs.writeFile(outputPath, value, "utf8");
+      await fs.writeFile(outputPath, value);
     }
-
-    // ✅ PDF → DOCX
+    // PDF → DOCX
     else if (ext === ".pdf" && format === "docx") {
-      const dataBuffer = await fs.readFile(file.path);
-      const pdfData = await pdfParse(dataBuffer);
+      const pdfBytes = await fs.readFile(file.path);
+      const pdfDoc = await pdfLib.PDFDocument.load(pdfBytes);
+      let text = "";
+      pdfDoc.getPages().forEach(p => {
+        text += p.getTextContent?.() || "";
+      });
 
       const doc = new Document({
         sections: [
           {
             properties: {},
-            children: [new Paragraph(pdfData.text)],
-          },
-        ],
+            children: [new Paragraph(text)]
+          }
+        ]
       });
 
       const buffer = await Packer.toBuffer(doc);
       await fs.writeFile(outputPath, buffer);
     }
-
-    // ✅ DOCX → PDF
+    // DOCX → PDF
     else if (ext === ".docx" && format === "pdf") {
       const { value } = await mammoth.extractRawText({ path: file.path });
       const pdfDoc = await PDFDocument.create();
@@ -96,8 +101,7 @@ app.post("/api/upload", upload.single("file"), async (req, res) => {
       const pdfBytesOut = await pdfDoc.save();
       await fs.writeFile(outputPath, pdfBytesOut);
     }
-
-    // ✅ TXT → PDF
+    // TXT → PDF
     else if (ext === ".txt" && format === "pdf") {
       const text = await fs.readFile(file.path, "utf-8");
       const pdfDoc = await PDFDocument.create();
@@ -105,12 +109,11 @@ app.post("/api/upload", upload.single("file"), async (req, res) => {
       page.drawText(text, { x: 50, y: 700, size: 12 });
       const pdfBytesOut = await pdfDoc.save();
       await fs.writeFile(outputPath, pdfBytesOut);
-    }
-
-    else {
+    } else {
       return res.status(400).json({ error: "Conversión no soportada" });
     }
 
+    // Retornamos la ruta pública para descargar
     res.json({
       message: "Archivo convertido",
       downloadUrl: `/converted/${outputName}`
@@ -121,24 +124,25 @@ app.post("/api/upload", upload.single("file"), async (req, res) => {
   }
 });
 
-// Limpieza automática
+// Limpieza automática de archivos temporales
 const CLEAN_INTERVAL = 5 * 60 * 1000; // 5 minutos
 const TEMP_FOLDERS = ["./uploads", "./converted"];
 
 setInterval(() => {
   const now = Date.now();
-  TEMP_FOLDERS.forEach((folder) => {
+  TEMP_FOLDERS.forEach(folder => {
     fs.readdir(folder, (err, files) => {
       if (err) return console.error(err);
-      files.forEach((file) => {
+      files.forEach(file => {
         const filePath = path.join(folder, file);
         fs.stat(filePath, (err, stats) => {
           if (err) return console.error(err);
           const age = now - stats.birthtimeMs;
           if (age > CLEAN_INTERVAL) {
-            fs.unlink(filePath)
+            fs
+              .unlink(filePath)
               .then(() => console.log(`Archivo eliminado: ${filePath}`))
-              .catch((err) => console.error(err));
+              .catch(err => console.error(err));
           }
         });
       });
