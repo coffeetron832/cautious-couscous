@@ -8,20 +8,22 @@
 <body>
   
   <h1 class="logo" aria-label="pontonConverter">
-  <span class="first">p</span><span class="reveal">onton</span><span class="rest">Converter</span>
-</h1>
-
-
+    <span class="first">p</span><span class="reveal">onton</span><span class="rest">Converter</span>
+  </h1>
 
   <p>Convierte tus imágenes y documentos al instante. Selecciona un archivo y elige el formato de salida.</p>
 
   <form id="uploadForm">
     <input type="file" name="file" id="fileInput" required>
-    <div id="preview"></div> 
+    
+    <!-- Contenedor de preview con botón de eliminar -->
+    <div id="preview-container" style="position: relative; display: inline-block;">
+      <div id="preview"></div>
+      <button type="button" id="removeFileBtn" style="display:none; position:absolute; top:5px; right:5px; background:#f33; color:#fff; border:none; border-radius:50%; width:24px; height:24px; cursor:pointer;">✕</button>
+    </div>
     
     <select name="format" id="formatSelect" required>
       <option value="">Selecciona formato de salida</option>
-      <!-- Las opciones se llenan dinámicamente según el archivo subido -->
     </select>
 
     <button type="submit">Convertir</button>
