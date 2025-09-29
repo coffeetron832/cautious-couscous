@@ -6,6 +6,8 @@ const sharp = require("sharp");
 const pdfLib = require("pdf-lib");
 const mammoth = require("mammoth");
 const cors = require("cors");
+const { Document, Packer, Paragraph } = require("docx");
+const { PDFDocument } = require("pdf-lib");
 
 const app = express();
 const PORT = 8080;
@@ -55,14 +57,54 @@ app.post("/api/upload", upload.single("file"), async (req, res) => {
       const pdfBytes = await fs.readFile(file.path);
       const pdfDoc = await pdfLib.PDFDocument.load(pdfBytes);
       let text = "";
-      pdfDoc.getPages().forEach(p => { text += p.getTextContent?.() || ""; });
+      pdfDoc.getPages().forEach(p => {
+        text += p.getTextContent?.() || "";
+      });
       await fs.writeFile(outputPath, text);
     }
     // DOCX → TXT
     else if (ext === ".docx" && format === "txt") {
       const { value } = await mammoth.extractRawText({ path: file.path });
       await fs.writeFile(outputPath, value);
-    } else {
+    }
+    // PDF → DOCX
+    else if (ext === ".pdf" && format === "docx") {
+      const pdfBytes = await fs.readFile(file.path);
+      const pdfDoc = await pdfLib.PDFDocument.load(pdfBytes);
+      let text = "";
+      pdfDoc.getPages().forEach(p => {
+        text += p.getTextContent?.() || "";
+      });
+
+      const doc = new Document({
+        sections: [{
+          properties: {},
+          children: [new Paragraph(text)],
+        }],
+      });
+
+      const buffer = await Packer.toBuffer(doc);
+      await fs.writeFile(outputPath, buffer);
+    }
+    // DOCX → PDF
+    else if (ext === ".docx" && format === "pdf") {
+      const { value } = await mammoth.extractRawText({ path: file.path });
+      const pdfDoc = await PDFDocument.create();
+      const page = pdfDoc.addPage();
+      page.drawText(value, { x: 50, y: 700, size: 12 });
+      const pdfBytesOut = await pdfDoc.save();
+      await fs.writeFile(outputPath, pdfBytesOut);
+    }
+    // TXT → PDF
+    else if (ext === ".txt" && format === "pdf") {
+      const text = await fs.readFile(file.path, "utf-8");
+      const pdfDoc = await PDFDocument.create();
+      const page = pdfDoc.addPage();
+      page.drawText(text, { x: 50, y: 700, size: 12 });
+      const pdfBytesOut = await pdfDoc.save();
+      await fs.writeFile(outputPath, pdfBytesOut);
+    }
+    else {
       return res.status(400).json({ error: "Conversión no soportada" });
     }
 
