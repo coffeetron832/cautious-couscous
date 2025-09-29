@@ -2,7 +2,7 @@ const form = document.getElementById("uploadForm");
 const resultDiv = document.getElementById("result");
 const fileInput = document.querySelector('input[name="file"]');
 const formatSelect = document.querySelector('select[name="format"]');
-const previewDiv = document.getElementById("preview"); // 👈 div para mostrar preview
+const previewDiv = document.getElementById("preview"); // div para mostrar preview
 
 // Detectar tipo de archivo y actualizar opciones de formato
 fileInput.addEventListener("change", () => {
@@ -13,9 +13,9 @@ fileInput.addEventListener("change", () => {
   const ext = file.name.split('.').pop().toLowerCase();
   formatSelect.innerHTML = '<option value="">Selecciona formato de salida</option>';
 
-  // Opciones para imágenes
+  // ✅ Imágenes
   if (["jpg", "jpeg", "png", "webp"].includes(ext)) {
-    // Mostrar preview de imagen
+    // Mostrar preview
     const reader = new FileReader();
     reader.onload = (e) => {
       const img = document.createElement("img");
@@ -30,21 +30,46 @@ fileInput.addEventListener("change", () => {
 
     // Opciones de conversión para imágenes
     ["jpg", "png", "webp"].forEach(f => {
+      if (ext !== f) { // evitar convertir a mismo formato
+        const option = document.createElement("option");
+        option.value = f;
+        option.textContent = f.toUpperCase();
+        formatSelect.appendChild(option);
+      }
+    });
+  }
+
+  // ✅ PDF
+  else if (ext === "pdf") {
+    ["txt", "docx"].forEach(f => {
       const option = document.createElement("option");
       option.value = f;
       option.textContent = f.toUpperCase();
       formatSelect.appendChild(option);
     });
   }
-  // Opciones para documentos
-  else if (["pdf", "docx"].includes(ext)) {
-    ["txt"].forEach(f => {
+
+  // ✅ DOCX
+  else if (ext === "docx") {
+    ["txt", "pdf"].forEach(f => {
       const option = document.createElement("option");
       option.value = f;
       option.textContent = f.toUpperCase();
       formatSelect.appendChild(option);
     });
-  } else {
+  }
+
+  // ✅ TXT
+  else if (ext === "txt") {
+    ["pdf"].forEach(f => {
+      const option = document.createElement("option");
+      option.value = f;
+      option.textContent = f.toUpperCase();
+      formatSelect.appendChild(option);
+    });
+  }
+
+  else {
     alert("Tipo de archivo no soportado");
     fileInput.value = "";
   }
@@ -64,7 +89,7 @@ form.addEventListener("submit", async (e) => {
 
   const data = await res.json();
   if (res.ok) {
-    resultDiv.innerHTML = `<a href="${data.downloadUrl}" download>Descargar archivo convertido</a>`;
+    resultDiv.innerHTML = `<a href="${data.downloadUrl}" download>⬇️ Descargar archivo convertido</a>`;
   } else {
     resultDiv.textContent = data.error;
   }
