@@ -15,11 +15,12 @@
 
   <form id="uploadForm">
     <input type="file" name="file" id="fileInput" required>
+          <button type="button" id="removeFileBtn" style="display:none; position:absolute; top:5px; right:5px; background:#f33; color:#fff; border:none; border-radius:50%; width:24px; height:24px; cursor:pointer;">✕</button>
+
     
     <!-- Contenedor de preview con botón de eliminar -->
     <div id="preview-container" style="position: relative; display: inline-block;">
       <div id="preview"></div>
-      <button type="button" id="removeFileBtn" style="display:none; position:absolute; top:5px; right:5px; background:#f33; color:#fff; border:none; border-radius:50%; width:24px; height:24px; cursor:pointer;">✕</button>
     </div>
     
     <select name="format" id="formatSelect" required>
