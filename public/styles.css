@@ -7,29 +7,65 @@ body {
   color: #fff;
   max-width: 600px;
   margin: 50px auto;
-  padding: 20px;
+  padding: 80px 20px 20px; /* espacio arriba para la lámpara */
   text-align: center;
   position: relative;
   overflow: hidden;
 }
 
-/* --- efecto lámpara --- */
-body::before {
-  content: "";
-  position: fixed;
+/* --- lámpara colgante --- */
+.lamp {
+  position: absolute;
   top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  background: radial-gradient(circle 150px at var(--x, 50%) var(--y, 50%), rgba(255,255,200,0.9), rgba(0,0,0,0.95) 80%);
-  transition: background 0.05s;
-  z-index: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  height: 200px;
+  width: 10px;
+  background: #333;
+  z-index: 2;
+  display: flex;
+  justify-content: center;
 }
 
+.lamp::after {
+  content: "";
+  position: absolute;
+  bottom: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 40px;
+  background: radial-gradient(circle at 50% 50%, #ffeb99, #cc9900 80%);
+  border-radius: 50%;
+  box-shadow: 0 0 20px 10px rgba(255, 240, 150, 0.8);
+}
+
+/* --- luz proyectada --- */
+.light {
+  position: absolute;
+  top: 180px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle at center top, rgba(255, 255, 200, 0.6), rgba(0, 0, 0, 0.95) 70%);
+  pointer-events: none;
+  border-radius: 50%;
+  filter: blur(40px);
+  z-index: 1;
+  animation: swing 5s ease-in-out infinite alternate;
+}
+
+/* --- movimiento realista de columpio --- */
+@keyframes swing {
+  0% { transform: translateX(-50%) rotate(-3deg); }
+  100% { transform: translateX(-50%) rotate(3deg); }
+}
+
+/* --- contenido encima de la luz --- */
 h1, p, form, #result {
   position: relative;
-  z-index: 1; /* para que queden encima de la lámpara */
+  z-index: 3;
 }
 
 input, select, button {
