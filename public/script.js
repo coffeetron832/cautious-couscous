@@ -1,10 +1,36 @@
-Haz los cambios:
-
 const form = document.getElementById("uploadForm");
 const resultDiv = document.getElementById("result");
 const fileInput = document.querySelector('input[name="file"]');
 const formatSelect = document.querySelector('select[name="format"]');
 const previewDiv = document.getElementById("preview"); // div para mostrar preview
+
+const removeFileBtn = document.getElementById("removeFileBtn");
+
+// Resetear vista previa y opciones
+function resetPreview() {
+  fileInput.value = "";
+  previewDiv.innerHTML = "";
+  formatSelect.innerHTML = '<option value="">Selecciona formato de salida</option>';
+  removeFileBtn.style.display = "none";
+}
+
+// Botón para quitar archivo
+removeFileBtn.addEventListener("click", resetPreview);
+
+// Detectar archivo cargado
+fileInput.addEventListener("change", () => {
+  const file = fileInput.files[0];
+  previewDiv.innerHTML = "";
+  if (!file) {
+    removeFileBtn.style.display = "none";
+    return;
+  }
+
+  removeFileBtn.style.display = "block"; // mostrar botón ❌
+
+  const ext = file.name.split(".").pop().toLowerCase();
+  formatSelect.innerHTML = '<option value="">Selecciona formato de salida</option>';
+  });
 
 // Detectar tipo de archivo y actualizar opciones de formato
 fileInput.addEventListener("change", () => {
