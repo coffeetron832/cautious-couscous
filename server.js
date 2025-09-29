@@ -3,11 +3,11 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs-extra");
 const sharp = require("sharp");
-const pdfLib = require("pdf-lib");
 const mammoth = require("mammoth");
 const cors = require("cors");
+const pdfParse = require("pdf-parse");
 const { Document, Packer, Paragraph } = require("docx");
-const { PDFDocument } = require("pdf-lib");
+const { PDFDocument, StandardFonts } = require("pdf-lib");
 
 const app = express();
 const PORT = 8080;
@@ -27,6 +27,66 @@ const storage = multer.diskStorage({
     cb(null, Date.now() + path.extname(file.originalname))
 });
 const upload = multer({ storage });
+
+// Helpers
+async function writeTextToPdfFile(text, outputPath) {
+  const pdfDoc = await PDFDocument.create();
+  const helv = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  const fontSize = 12;
+  const pageWidth = 595; // A4-like width in points
+  const pageHeight = 842; // A4-like height in points
+  const margin = 50;
+  const maxWidth = pageWidth - margin * 2;
+
+  // approximate max chars per line (rough)
+  const approxCharWidth = fontSize * 0.6; // heuristic
+  const maxChars = Math.floor(maxWidth / approxCharWidth);
+
+  // split text into lines preserving existing newlines, and wrap long lines
+  const rawLines = text.split(/\r?\n/);
+  const lines = [];
+  for (const rl of rawLines) {
+    if (!rl) { lines.push(""); continue; }
+    let remaining = rl;
+    while (remaining.length > 0) {
+      if (remaining.length <= maxChars) {
+        lines.push(remaining);
+        break;
+      } else {
+        // try to break at last space within maxChars
+        let chunk = remaining.slice(0, maxChars);
+        const lastSpace = chunk.lastIndexOf(" ");
+        if (lastSpace > Math.floor(maxChars * 0.6)) {
+          chunk = chunk.slice(0, lastSpace);
+        }
+        lines.push(chunk);
+        remaining = remaining.slice(chunk.length).trim();
+      }
+    }
+  }
+
+  let page = pdfDoc.addPage([pageWidth, pageHeight]);
+  let y = pageHeight - margin;
+  const lineHeight = fontSize + 4;
+
+  for (const line of lines) {
+    if (y < margin + lineHeight) {
+      // new page
+      page = pdfDoc.addPage([pageWidth, pageHeight]);
+      y = pageHeight - margin;
+    }
+    page.drawText(line || " ", {
+      x: margin,
+      y: y,
+      size: fontSize,
+      font: helv,
+    });
+    y -= lineHeight;
+  }
+
+  const bytes = await pdfDoc.save();
+  await fs.writeFile(outputPath, bytes);
+}
 
 // Página principal
 app.get("/", (req, res) =>
@@ -56,60 +116,48 @@ app.post("/api/upload", upload.single("file"), async (req, res) => {
         await img.webp({ quality: 100 }).toFile(outputPath);
       }
     }
-    // PDF → TXT
+
+    // ✅ PDF → TXT (usando pdf-parse)
     else if (ext === ".pdf" && format === "txt") {
-      const pdfBytes = await fs.readFile(file.path);
-      const pdfDoc = await pdfLib.PDFDocument.load(pdfBytes);
-      let text = "";
-      pdfDoc.getPages().forEach(p => {
-        text += p.getTextContent?.() || "";
-      });
-      await fs.writeFile(outputPath, text);
+      const dataBuffer = await fs.readFile(file.path);
+      const pdfData = await pdfParse(dataBuffer);
+      const text = pdfData && pdfData.text ? pdfData.text : "";
+      await fs.writeFile(outputPath, text, "utf8");
     }
-    // DOCX → TXT
+
+    // ✅ DOCX → TXT (mammoth)
     else if (ext === ".docx" && format === "txt") {
       const { value } = await mammoth.extractRawText({ path: file.path });
-      await fs.writeFile(outputPath, value);
+      await fs.writeFile(outputPath, value || "", "utf8");
     }
-    // PDF → DOCX
+
+    // ✅ PDF → DOCX (extraer texto con pdf-parse y crear docx)
     else if (ext === ".pdf" && format === "docx") {
-      const pdfBytes = await fs.readFile(file.path);
-      const pdfDoc = await pdfLib.PDFDocument.load(pdfBytes);
-      let text = "";
-      pdfDoc.getPages().forEach(p => {
-        text += p.getTextContent?.() || "";
-      });
+      const dataBuffer = await fs.readFile(file.path);
+      const pdfData = await pdfParse(dataBuffer);
+      const text = pdfData && pdfData.text ? pdfData.text : "";
 
-      const doc = new Document({
-        sections: [
-          {
-            properties: {},
-            children: [new Paragraph(text)]
-          }
-        ]
-      });
-
+      // crear docx con el texto dividido en párrafos
+      const paragraphs = (text.split(/\r?\n/).filter(Boolean)).map(line => new Paragraph(line));
+      const doc = new Document({ sections: [{ properties: {}, children: paragraphs.length ? paragraphs : [new Paragraph("")] }] });
       const buffer = await Packer.toBuffer(doc);
       await fs.writeFile(outputPath, buffer);
     }
-    // DOCX → PDF
+
+    // ✅ DOCX → PDF (extraer texto con mammoth y escribir PDF con paginación)
     else if (ext === ".docx" && format === "pdf") {
       const { value } = await mammoth.extractRawText({ path: file.path });
-      const pdfDoc = await PDFDocument.create();
-      const page = pdfDoc.addPage();
-      page.drawText(value, { x: 50, y: 700, size: 12 });
-      const pdfBytesOut = await pdfDoc.save();
-      await fs.writeFile(outputPath, pdfBytesOut);
+      const text = value || "";
+      await writeTextToPdfFile(text, outputPath);
     }
-    // TXT → PDF
+
+    // ✅ TXT → PDF (leer txt y escribir PDF con paginación)
     else if (ext === ".txt" && format === "pdf") {
       const text = await fs.readFile(file.path, "utf-8");
-      const pdfDoc = await PDFDocument.create();
-      const page = pdfDoc.addPage();
-      page.drawText(text, { x: 50, y: 700, size: 12 });
-      const pdfBytesOut = await pdfDoc.save();
-      await fs.writeFile(outputPath, pdfBytesOut);
-    } else {
+      await writeTextToPdfFile(text, outputPath);
+    }
+
+    else {
       return res.status(400).json({ error: "Conversión no soportada" });
     }
 
@@ -119,7 +167,7 @@ app.post("/api/upload", upload.single("file"), async (req, res) => {
       downloadUrl: `/converted/${outputName}`
     });
   } catch (err) {
-    console.error(err);
+    console.error("Error en conversión:", err);
     res.status(500).json({ error: "Error en la conversión" });
   }
 });
@@ -139,8 +187,7 @@ setInterval(() => {
           if (err) return console.error(err);
           const age = now - stats.birthtimeMs;
           if (age > CLEAN_INTERVAL) {
-            fs
-              .unlink(filePath)
+            fs.unlink(filePath)
               .then(() => console.log(`Archivo eliminado: ${filePath}`))
               .catch(err => console.error(err));
           }
