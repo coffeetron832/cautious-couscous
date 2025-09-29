@@ -95,35 +95,56 @@ button:active {
 
 
 
-/* Logo */
+/* Logo "desprendible" (preparado para tema oscuro) */
 .logo {
-  font-size: 2rem;
-  font-weight: bold;
-  font-family: 'Rubik', sans-serif;
-  color: transparent;
-  background: linear-gradient(90deg, #4cafef 0%, #4cafef 100%);
-  background-clip: text;
-  -webkit-background-clip: text;
-  position: relative;
-  cursor: pointer;
   display: inline-block;
+  position: relative;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #4cafef;
+  cursor: pointer;
+  line-height: 1;
+  /* evita que el layout salte bruscamente: transición suave del contenedor */
+  transition: width .35s ease;
   white-space: nowrap;
 }
 
-/* Al inicio solo muestra "pConverter" */
-.logo::after {
-  content: "pConverter";
-  position: absolute;
-  left: 0;
-  top: 0;
-  color: #4cafef;
-  transition: content 0.5s ease;
+/* parte que se añade (Ponton) — empieza oculta (max-width:0) */
+.logo .extra {
+  display: inline-block;
+  vertical-align: middle;
+  overflow: hidden;
+  max-width: 0ch;              /* será expandido a --len (en ch) por JS/CSS */
+  opacity: 0;
+  transform-origin: left center;
+  transition:
+    max-width 420ms cubic-bezier(.2,.9,.2,1),
+    opacity 260ms ease,
+    transform 420ms cubic-bezier(.2,.9,.2,1);
+  /* opcional: suaviza la aparición con letter-spacing */
+  letter-spacing: 0.02em;
 }
 
-/* Al pasar el mouse, el texto se "extiende" */
-.logo:hover::after {
-  content: "PontonConverter";
+/* la parte base (pConverter) visible siempre */
+.logo .base {
+  display: inline-block;
+  vertical-align: middle;
+  transition: transform 420ms cubic-bezier(.2,.9,.2,1);
 }
+
+/* Hover: expandir la parte extra desde la izquierda, hacerla visible */
+.logo:hover .extra {
+  /* --len será una variable CSS con valor tipo "6ch" establecida por JS */
+  max-width: var(--len, 6ch);
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Para un regreso más fluido al quitar hover */
+.logo:not(:hover) .extra {
+  transform: translateX(-6%);
+}
+
 
 
 
