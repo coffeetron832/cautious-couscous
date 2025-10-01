@@ -4,6 +4,37 @@
   <meta charset="UTF-8">
   <title>Documento en vivo</title>
   <link rel="stylesheet" href="styles.css">
+  <style>
+    /* Tooltip básico */
+    .tooltip {
+      position: relative;
+      display: inline-block;
+      cursor: help;
+    }
+
+    .tooltip .tooltiptext {
+      visibility: hidden;
+      width: 240px;
+      background-color: #333;
+      color: #fff;
+      text-align: left;
+      border-radius: 6px;
+      padding: 10px;
+      position: absolute;
+      z-index: 1;
+      bottom: 125%; /* aparece encima */
+      left: 50%;
+      margin-left: -120px;
+      opacity: 0;
+      transition: opacity 0.3s;
+      font-size: 0.85em;
+    }
+
+    .tooltip:hover .tooltiptext {
+      visibility: visible;
+      opacity: 1;
+    }
+  </style>
 </head>
 <body>
   <div class="container">
@@ -18,10 +49,24 @@
 
     <!-- Acciones con .pntn -->
     <div class="pntn-actions">
-      <button id="downloadPntn">⬇️ Descargar .pntn</button>
+      <div class="tooltip">
+        <button id="downloadPntn">⬇️ Descargar .pntn</button>
+        <span class="tooltiptext">
+          El formato <b>.pntn</b> es ligero, simple y diseñado para colaborar.<br>
+          Guarda tu documento de forma segura y ábrelo en cualquier momento.<br>
+          ¡Piensa en él como tu cuaderno digital portátil!
+        </span>
+      </div>
+
       <form id="uploadForm" enctype="multipart/form-data" style="display:inline;">
-        <input type="file" id="uploadPntn" name="pntnfile" accept=".pntn" />
-        <button type="submit">⬆️ Importar .pntn</button>
+        <div class="tooltip">
+          <input type="file" id="uploadPntn" name="pntnfile" accept=".pntn" />
+          <button type="submit">⬆️ Importar .pntn</button>
+          <span class="tooltiptext">
+            Sube un archivo <b>.pntn</b> para continuar tu trabajo donde lo dejaste.<br>
+            Ideal para compartir ideas o recuperar versiones previas.
+          </span>
+        </div>
       </form>
     </div>
   </div>
