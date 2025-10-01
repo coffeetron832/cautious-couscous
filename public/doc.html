@@ -8,9 +8,22 @@
 <body>
   <div class="container">
     <h2>Documento colaborativo en vivo</h2>
+
+    <!-- Editor principal -->
     <textarea id="editor" rows="20" cols="80"></textarea>
+
+    <!-- Link de colaboración -->
     <p class="note">Comparte este link con otros para escribir juntos:</p>
     <p id="docLink" class="note"></p>
+
+    <!-- Acciones con .pntn -->
+    <div class="pntn-actions">
+      <button id="downloadPntn">⬇️ Descargar .pntn</button>
+      <form id="uploadForm" enctype="multipart/form-data" style="display:inline;">
+        <input type="file" id="uploadPntn" name="pntnfile" accept=".pntn" />
+        <button type="submit">⬆️ Importar .pntn</button>
+      </form>
+    </div>
   </div>
 
   <script src="/socket.io/socket.io.js"></script>
