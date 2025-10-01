@@ -16,3 +16,6 @@ socket.on("update", (content) => {
 editor.addEventListener("input", () => {
   socket.emit("edit", editor.value);
 });
+
+// Mostrar link del documento actual
+document.getElementById("docLink").textContent = window.location.href;
