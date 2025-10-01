@@ -1,72 +1,49 @@
-// server.js
-app.get('/', (req, res) => {
-res.sendFile(path.join(__dirname, 'public', 'index.html'));
+const express = require("express");
+const http = require("http");
+const { Server } = require("socket.io");
+const { v4: uuidv4 } = require("uuid");
+
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server);
+
+app.use(express.static("public"));
+
+// Documentos en memoria
+const documents = new Map(); // { docId: content }
+
+// Crear documento nuevo
+app.get("/new", (req, res) => {
+  const id = uuidv4();
+  res.redirect(`/doc/${id}`);
 });
 
-
-app.get('/new', (req, res) => {
-const id = generateId();
-res.redirect(`/doc/${id}`);
+// Servir editor
+app.get("/doc/:id", (req, res) => {
+  res.sendFile(__dirname + "/public/doc.html");
 });
 
+io.on("connection", (socket) => {
+  let currentDoc = null;
 
-app.get('/doc/:id', (req, res) => {
-res.sendFile(path.join(__dirname, 'public', 'doc.html'));
+  socket.on("joinDoc", (docId) => {
+    currentDoc = docId;
+
+    if (!documents.has(docId)) {
+      documents.set(docId, "");
+    }
+
+    socket.join(docId);
+    socket.emit("update", documents.get(docId));
+  });
+
+  socket.on("edit", (content) => {
+    if (!currentDoc) return;
+    documents.set(currentDoc, content);
+    socket.to(currentDoc).emit("update", content);
+  });
 });
 
-
-// Socket.IO
-io.on('connection', (socket) => {
-let currentDocId = null;
-
-
-socket.on('joinDoc', (docId) => {
-currentDocId = docId;
-socket.join(docId);
-
-
-ensureDocExists(docId);
-
-
-// enviar estado inicial
-const doc = documents.get(docId);
-socket.emit('update', doc.content);
-
-
-// opcional: informar número de participantes
-const clients = io.sockets.adapter.rooms.get(docId);
-const count = clients ? clients.size : 0;
-io.to(docId).emit('meta', { clients: count });
-});
-
-
-socket.on('edit', (newContent) => {
-if (!currentDocId) return;
-const doc = documents.get(currentDocId);
-if (!doc) return;
-
-
-doc.content = newContent;
-doc.lastUpdated = new Date();
-scheduleDocExpiry(currentDocId);
-
-
-// difundir a los demás en la misma sala
-socket.to(currentDocId).emit('update', newContent);
-});
-
-
-socket.on('disconnect', () => {
-if (!currentDocId) return;
-
-
-const clients = io.sockets.adapter.rooms.get(currentDocId);
-const count = clients ? clients.size : 0;
-io.to(currentDocId).emit('meta', { clients: count });
-});
-});
-
-
-server.listen(PORT, () => {
-console.log(`Servidor escuchando en http://localhost:${PORT}`);
-});
+server.listen(8080, () =>
+  console.log("Servidor corriendo en http://localhost:8080")
+);
