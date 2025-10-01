@@ -34,11 +34,54 @@
       visibility: visible;
       opacity: 1;
     }
+
+    /* Pequeños estilos para badge y lista de autores */
+    #userBadge {
+      display: inline-block;
+      background: linear-gradient(90deg,#f0f8ff,#e6fffa);
+      color: #0b3d91;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-weight: 600;
+      margin-bottom: 0.6rem;
+    }
+
+    #authorsList {
+      font-size: 0.9rem;
+      color: #333;
+      margin-top: 0.6rem;
+      background: #fbfbfb;
+      padding: 0.5rem 0.75rem;
+      border-radius: 8px;
+      border: 1px solid #eee;
+    }
+
+    .pntn-actions {
+      margin-top: 0.8rem;
+      display: flex;
+      gap: 0.6rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .pntn-actions input[type="file"] {
+      display: inline-block;
+      margin-right: 0.4rem;
+    }
+
+    /* Responsivo */
+    @media (max-width: 720px) {
+      textarea { width: 100%; min-height: 320px; }
+      .tooltip .tooltiptext { width: 200px; margin-left: -100px; }
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <h2>Documento colaborativo en vivo</h2>
+
+    <!-- Badge que mostrará el nombre asignado (ej: Mango-Azul) -->
+    <p id="userBadge" class="note">Eres: —</p>
 
     <!-- Editor principal -->
     <textarea id="editor" rows="20" cols="80"></textarea>
@@ -50,7 +93,7 @@
     <!-- Acciones con .pntn -->
     <div class="pntn-actions">
       <div class="tooltip">
-        <button id="downloadPntn">⬇️ Descargar .pntn</button>
+        <button id="downloadPntn" type="button">⬇️ Descargar .pntn</button>
         <span class="tooltiptext">
           El formato <b>.pntn</b> es ligero, simple y diseñado para colaborar.<br>
           Guarda tu documento de forma segura y ábrelo en cualquier momento.<br>
@@ -59,7 +102,7 @@
       </div>
 
       <form id="uploadForm" enctype="multipart/form-data" style="display:inline;">
-        <div class="tooltip">
+        <div class="tooltip" style="display:flex; align-items:center; gap:0.4rem;">
           <input type="file" id="uploadPntn" name="pntnfile" accept=".pntn" />
           <button type="submit">⬆️ Importar .pntn</button>
           <span class="tooltiptext">
@@ -69,6 +112,9 @@
         </div>
       </form>
     </div>
+
+    <!-- Lista de autores conectados -->
+    <div id="authorsList" class="note" aria-live="polite"></div>
   </div>
 
   <script src="/socket.io/socket.io.js"></script>
