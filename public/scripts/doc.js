@@ -25,3 +25,39 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
+// ====================
+// Exportar a .pntn
+// ====================
+const downloadBtn = document.getElementById("downloadPntn");
+if (downloadBtn) {
+  downloadBtn.addEventListener("click", () => {
+    const blob = new Blob([editor.value], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `documento-${docId}.pntn`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+}
+
+// ====================
+// Importar desde .pntn
+// ====================
+const uploadForm = document.getElementById("uploadForm");
+if (uploadForm) {
+  uploadForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const fileInput = document.getElementById("uploadPntn");
+    if (!fileInput.files.length) return alert("Selecciona un archivo .pntn");
+
+    const file = fileInput.files[0];
+    const text = await file.text();
+
+    // Reemplazar contenido actual y sincronizar
+    editor.value = text;
+    socket.emit("edit", text);
+  });
+}
