@@ -4,14 +4,153 @@
   <meta charset="UTF-8">
   <title>Editor colaborativo</title>
   <link rel="stylesheet" href="styles.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f7f7f9;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 40px 20px;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+    }
+
+    p.lead {
+      font-size: 1.2rem;
+      color: #555;
+      margin-bottom: 20px;
+    }
+
+    button {
+      background: #4CAF50;
+      border: none;
+      padding: 12px 24px;
+      color: white;
+      font-size: 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      background: #45a049;
+    }
+
+    .features {
+      margin-top: 50px;
+      text-align: left;
+    }
+
+    .features h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .feature {
+      display: flex;
+      align-items: flex-start;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .feature svg {
+      min-width: 24px;
+      min-height: 24px;
+      color: #4CAF50;
+    }
+
+    .feature p {
+      margin: 0;
+      font-size: 1rem;
+      color: #444;
+    }
+
+    footer {
+      margin-top: 60px;
+      font-size: 0.9rem;
+      color: #888;
+      text-align: center;
+    }
+
+    .format-box {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      margin-top: 30px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      text-align: left;
+    }
+
+    .format-box h3 {
+      margin-top: 0;
+    }
+
+    .format-box code {
+      background: #f1f1f1;
+      padding: 4px 6px;
+      border-radius: 4px;
+      font-size: 0.9rem;
+    }
+  </style>
 </head>
 <body>
   <div class="container">
-    <h1>📝 Editor colaborativo</h1>
-    <p>Crea un documento compartido en segundos, sin cuentas.</p>
-    <button id="newDoc">Crear nuevo documento</button>
+    <h1><i data-lucide="notebook"></i> Editor colaborativo</h1>
+    <p class="lead">Crea un documento compartido en segundos, sin cuentas, sin complicaciones.</p>
+    <button id="newDoc"><i data-lucide="plus"></i> Crear nuevo documento</button>
+
+    <div class="features">
+      <h2>✨ ¿Por qué usar este editor?</h2>
+
+      <div class="feature">
+        <i data-lucide="users"></i>
+        <p>Escribe y edita en <b>tiempo real</b> junto a tu equipo, amigos o clientes.</p>
+      </div>
+
+      <div class="feature">
+        <i data-lucide="lock"></i>
+        <p>Sin cuentas, sin rastreo, sin datos innecesarios. <b>Privacidad primero.</b></p>
+      </div>
+
+      <div class="feature">
+        <i data-lucide="zap"></i>
+        <p>Rápido y minimalista: abre un link y empieza a colaborar al instante.</p>
+      </div>
+    </div>
+
+    <div class="format-box">
+      <h3><i data-lucide="file"></i> Formato <code>.pntn</code></h3>
+      <p><b>Portable Notes for Team Networking</b> es el formato en el que se guardan tus documentos.</p>
+      <ul>
+        <li>📂 Ligero y fácil de compartir.</li>
+        <li>📝 Incluye autores, historial de cambios y contenido.</li>
+        <li>🔄 Perfecto para pausar y continuar tu trabajo en cualquier momento.</li>
+      </ul>
+    </div>
+
+    <footer>
+      <p>Hecho para equipos que valoran la simplicidad y la colaboración en vivo.</p>
+    </footer>
   </div>
 
-  <script src="scripts/index.js"></script>
+  <script>
+    lucide.createIcons();
+
+    document.getElementById("newDoc").addEventListener("click", () => {
+      window.location.href = "/new";
+    });
+  </script>
 </body>
 </html>
