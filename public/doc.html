@@ -2,40 +2,38 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Documento en vivo</title>
-  <link rel="stylesheet" href="styles.css">
+  <title>Documento en vivo — Portable Notes for Team Networking (.pntn)</title>
+  <link rel="stylesheet" href="/styles.css">
   <style>
-    /* Tooltip básico */
-    .tooltip {
-      position: relative;
+    /* tooltip y estilos previos */
+    .tooltip { position: relative; display: inline-block; cursor: help; }
+    .tooltip .tooltiptext { visibility: hidden; width: 240px; background-color: #333; color: #fff; text-align: left; border-radius: 6px; padding: 10px; position: absolute; z-index: 1; bottom: 125%; left: 50%; margin-left: -120px; opacity: 0; transition: opacity 0.3s; font-size: 0.85em; }
+    .tooltip:hover .tooltiptext { visibility: visible; opacity: 1; }
+
+    /* Header centrado */
+    #pntnHeader {
+      text-align: center;
+      margin-bottom: 0.6rem;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+    #pntnHeader pre {
       display: inline-block;
-      cursor: help;
-    }
-
-    .tooltip .tooltiptext {
-      visibility: hidden;
-      width: 240px;
-      background-color: #333;
-      color: #fff;
       text-align: left;
-      border-radius: 6px;
-      padding: 10px;
-      position: absolute;
-      z-index: 1;
-      bottom: 125%; /* aparece encima */
-      left: 50%;
-      margin-left: -120px;
-      opacity: 0;
-      transition: opacity 0.3s;
-      font-size: 0.85em;
+      background: #f8f9fb;
+      padding: 0.8rem 1rem;
+      border-radius: 8px;
+      border: 1px solid #eee;
+      font-size: 0.92rem;
     }
 
-    .tooltip:hover .tooltiptext {
-      visibility: visible;
-      opacity: 1;
+    #userForm {
+      display:flex;
+      gap:0.5rem;
+      align-items:center;
+      margin-bottom:0.6rem;
+      justify-content:center;
     }
 
-    /* Pequeños estilos para badge y lista de autores */
     #userBadge {
       display: inline-block;
       background: linear-gradient(90deg,#f0f8ff,#e6fffa);
@@ -46,58 +44,56 @@
       margin-bottom: 0.6rem;
     }
 
-    #authorsList {
-      font-size: 0.9rem;
-      color: #333;
-      margin-top: 0.6rem;
-      background: #fbfbfb;
-      padding: 0.5rem 0.75rem;
-      border-radius: 8px;
-      border: 1px solid #eee;
-    }
+    #authorsList { font-size: 0.9rem; color: #333; margin-top: 0.6rem; background: #fbfbfb; padding: 0.5rem 0.75rem; border-radius: 8px; border: 1px solid #eee; text-align:center; }
 
-    .pntn-actions {
-      margin-top: 0.8rem;
-      display: flex;
-      gap: 0.6rem;
-      align-items: center;
-      flex-wrap: wrap;
-    }
+    textarea { width: 100%; max-width: 900px; min-height: 320px; font-family: monospace; padding:1rem; border-radius:8px; border:1px solid #ddd; }
 
-    .pntn-actions input[type="file"] {
-      display: inline-block;
-      margin-right: 0.4rem;
-    }
+    .pntn-actions { margin-top: 0.8rem; display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; justify-content:center; }
+    .pntn-actions input[type="file"] { display: inline-block; margin-right: 0.4rem; }
 
-    /* Responsivo */
     @media (max-width: 720px) {
-      textarea { width: 100%; min-height: 320px; }
+      textarea { min-height: 260px; }
       .tooltip .tooltiptext { width: 200px; margin-left: -100px; }
     }
   </style>
 </head>
 <body>
-  <div class="container">
+  <div class="container" style="display:flex; flex-direction:column; align-items:center; gap:0.6rem; padding:2rem;">
     <h2>Documento colaborativo en vivo</h2>
 
-    <!-- Badge que mostrará el nombre asignado (ej: Mango-Azul) -->
-    <p id="userBadge" class="note">Eres: —</p>
+    <!-- Header centrado (se actualizará desde JS) -->
+    <div id="pntnHeader">
+      <pre id="headerPre">
+#PNTN-DOC v1.1
+title: Documento sin título
+authors:
+created: —
+      </pre>
+      <hr style="width:100%; max-width:900px; margin-top:0.6rem; opacity:0.2;">
+    </div>
+
+    <!-- Input para nombre de usuario (antes de unirse) -->
+    <div id="userForm" aria-live="polite">
+      <input id="usernameInput" type="text" placeholder="Escribe tu nombre (ej: Camila)" />
+      <button id="enterBtn" type="button">Entrar al documento</button>
+    </div>
+
+    <!-- Badge que mostrará el nombre asignado -->
+    <p id="userBadge" class="note" style="display:none;">Eres: —</p>
 
     <!-- Editor principal -->
-    <textarea id="editor" rows="20" cols="80"></textarea>
+    <textarea id="editor" rows="20" cols="80" disabled></textarea>
 
     <!-- Link de colaboración -->
     <p class="note">Comparte este link con otros para escribir juntos:</p>
-    <p id="docLink" class="note"></p>
+    <p id="docLink" class="note" style="text-align:center;"></p>
 
     <!-- Acciones con .pntn -->
     <div class="pntn-actions">
       <div class="tooltip">
         <button id="downloadPntn" type="button">⬇️ Descargar .pntn</button>
         <span class="tooltiptext">
-          El formato <b>.pntn</b> es ligero, simple y diseñado para colaborar.<br>
-          Guarda tu documento de forma segura y ábrelo en cualquier momento.<br>
-          ¡Piensa en él como tu cuaderno digital portátil!
+          El formato <b>.pntn</b> (Portable Notes for Team Networking) es ligero y pensado para equipos.
         </span>
       </div>
 
@@ -106,8 +102,7 @@
           <input type="file" id="uploadPntn" name="pntnfile" accept=".pntn" />
           <button type="submit">⬆️ Importar .pntn</button>
           <span class="tooltiptext">
-            Sube un archivo <b>.pntn</b> para continuar tu trabajo donde lo dejaste.<br>
-            Ideal para compartir ideas o recuperar versiones previas.
+            Sube un archivo <b>.pntn</b> para continuar tu trabajo donde lo dejaste.
           </span>
         </div>
       </form>
