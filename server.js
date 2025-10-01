@@ -16,34 +16,6 @@ app.use(express.static("public"));
 // Middleware para manejar uploads de .pntn
 const upload = multer({ dest: "uploads/" });
 
-// Helpers para generar nombres (fruta/animal + color opcional)
-const FRUITS = [
-  "Mango","Banano","Papaya","Guayaba","Fresa","Coco","Maracuyá","Uva","Piña","Melón"
-];
-const ANIMALS = [
-  "Zorro","Lobo","Tortuga","Águila","Mono","Gato","Perro","Colibrí","Oso","Liebre"
-];
-const COLORS = [
-  "Azul","Verde","Rojo","Amarillo","Naranja","Violeta","Gris","Café","Rosa","Cyan"
-];
-
-function randomFrom(arr) {
-  return arr[Math.floor(Math.random() * arr.length)];
-}
-
-function generateRandomName(existingSet = new Set()) {
-  // Forma: Fruta-Azul o Zorro-Verde
-  const source = Math.random() < 0.5 ? FRUITS : ANIMALS;
-  let base = `${randomFrom(source)}-${randomFrom(COLORS)}`;
-  // asegurar unicidad en el documento
-  let suffix = 1;
-  while (existingSet.has(base)) {
-    base = `${base}-${suffix}`;
-    suffix++;
-  }
-  return base;
-}
-
 // Parseador de .pntn v1.1 (formato de texto)
 function parsePntn(text) {
   const lines = text.split(/\r?\n/);
@@ -81,24 +53,20 @@ function parsePntn(text) {
 
   // Log (opcional)
   const log = [];
-  // remaining lines: look for "log:" and then entries
   for (; i < lines.length; i++) {
     const l = lines[i].trim();
     if (!l) continue;
     if (l.toLowerCase() === "log:") continue;
-    // Expect lines like: [2025-09-26T15:40:00Z] Juancho hizo X
     if (l.startsWith("[") && l.indexOf("]") > 0) {
       const closeIdx = l.indexOf("]");
       const ts = l.slice(1, closeIdx);
       const rest = l.slice(closeIdx + 1).trim();
       log.push({ timestamp: ts, entry: rest });
     } else {
-      // fallback: push raw
       log.push({ timestamp: null, entry: l });
     }
   }
 
-  // Build doc object
   const doc = {
     version: header["#pntn-doc"] || header["version"] || "1.1",
     title: header["title"] || "Documento importado",
@@ -110,47 +78,77 @@ function parsePntn(text) {
     created_at: header["created"] || new Date().toISOString(),
     expires_at: header["expires_at"] || null,
     content: content,
-    log: log, // array of {timestamp, entry}
+    log: log,
     settings: {}
   };
 
   return doc;
 }
 
-// Serializador a .pntn (v1.1)
+// Serializador a .pntn (v1.1) — genera log **resumido** a partir de activity + events
 function serializePntn(doc) {
   const version = "1.1";
   const title = doc.title || "Documento";
   const authors = (doc.authors && doc.authors.length) ? doc.authors.join(", ") : "Anónimo";
   const created = doc.created_at || new Date().toISOString();
   const content = doc.content || "";
-  const log = doc.log || [];
 
+  // build summarized log:
+  // doc.activity: { user: { edits, joins, disconnects, lastTs } }
+  const activity = doc.activity || {};
+  const events = doc.events || []; // raw join/disconnect events (optional)
+
+  const logLines = [];
+
+  // Include raw events first (join/disconnect explicit messages), keep order
+  events.forEach(ev => {
+    if (ev && ev.timestamp && ev.entry) {
+      logLines.push({ ts: ev.timestamp, text: ev.entry });
+    }
+  });
+
+  // Then include per-user summarized lines (edits / joins / disconnects)
+  Object.keys(activity).forEach(user => {
+    const a = activity[user];
+    const parts = [];
+    if (a.edits && a.edits > 0) parts.push(`${a.edits} edición${a.edits > 1 ? "es" : ""}`);
+    if (a.joins && a.joins > 0) parts.push(`${a.joins} entrada${a.joins > 1 ? "s" : ""}`);
+    if (a.disconnects && a.disconnects > 0) parts.push(`${a.disconnects} desconexión${a.disconnects > 1 ? "es" : ""}`);
+    const lastTs = a.lastTs || created;
+    if (parts.length > 0) {
+      const dateOnly = (new Date(lastTs)).toISOString().slice(0,10);
+      logLines.push({ ts: dateOnly, text: `${user} realizó: ${parts.join(", ")}` });
+    }
+  });
+
+  // sort logLines by ts (descending recent first)
+  logLines.sort((a,b) => (a.ts > b.ts ? -1 : a.ts < b.ts ? 1 : 0));
+
+  // Flatten into final lines
+  const finalLog = logLines.map(l => `[${l.ts}] ${l.text}`);
+
+  // build the textual .pntn
   const lines = [];
   lines.push(`#PNTN-DOC v${version}`);
   lines.push(`title: ${title}`);
   lines.push(`authors: ${authors}`);
   lines.push(`created: ${created}`);
-  if (doc.expires_at) {
-    lines.push(`expires_at: ${doc.expires_at}`);
-  }
+  if (doc.expires_at) lines.push(`expires_at: ${doc.expires_at}`);
   lines.push(`---`);
   lines.push(content);
   lines.push(`---`);
   lines.push(`log:`);
-  log.forEach(l => {
-    if (l.timestamp) {
-      lines.push(`[${l.timestamp}] ${l.entry}`);
-    } else {
-      lines.push(l.entry);
-    }
-  });
+  if (finalLog.length === 0) {
+    lines.push(`(no hay actividad registrada)`);
+  } else {
+    finalLog.forEach(l => lines.push(l));
+  }
 
   return lines.join("\n");
 }
 
 // Documentos en memoria
-// Estructura: { docId: { version, title, authors:[], created_at, expires_at, content, log:[], settings }}
+// Estructura: { docId: { version, title, authors:[], created_at, expires_at, content, activity:{}, events:[], participants: Map(socketId->username), settings }}
 const documents = new Map();
 
 // Crear documento nuevo
@@ -159,11 +157,14 @@ app.get("/new", (req, res) => {
   const now = new Date().toISOString();
   documents.set(id, {
     version: "1.1",
-    title: "Nuevo Documento",
+    title: "Documento sin título",
     created_at: now,
     expires_at: null,
     authors: [],
     content: "",
+    activity: {},
+    events: [],
+    participants: new Map(), // socketId -> username
     log: [],
     settings: { read_only: false, encrypted: false }
   });
@@ -195,19 +196,21 @@ app.get("/export/:id", (req, res) => {
 app.post("/import", upload.single("pntnfile"), (req, res) => {
   try {
     const raw = fs.readFileSync(req.file.path, "utf8");
-    const doc = parsePntn(raw);
+    const docParsed = parsePntn(raw);
     const id = uuidv4();
 
     // Normalize internal structure
     documents.set(id, {
-      version: doc.version || "1.1",
-      title: doc.title || "Documento importado",
-      created_at: doc.created_at || new Date().toISOString(),
-      expires_at: doc.expires_at || null,
-      authors: Array.isArray(doc.authors) ? doc.authors : [],
-      content: doc.content || "",
-      log: Array.isArray(doc.log) ? doc.log : [],
-      settings: doc.settings || {}
+      version: docParsed.version || "1.1",
+      title: docParsed.title || "Documento importado",
+      created_at: docParsed.created_at || new Date().toISOString(),
+      expires_at: docParsed.expires_at || null,
+      authors: Array.isArray(docParsed.authors) ? docParsed.authors : [],
+      content: docParsed.content || "",
+      activity: {}, // reset activity on import (we keep parsed log only if needed)
+      events: Array.isArray(docParsed.log) ? docParsed.log.map(l => ({ timestamp: l.timestamp, entry: l.entry })) : [],
+      participants: new Map(),
+      settings: docParsed.settings || {}
     });
 
     // Eliminar el archivo temporal
@@ -225,12 +228,24 @@ app.post("/import", upload.single("pntnfile"), (req, res) => {
 
 // Socket.io: colaboración en vivo
 io.on("connection", (socket) => {
-  let currentDoc = null;
-  let assignedUser = null;
+  // track current doc id and username in socket.data
+  socket.data.currentDoc = null;
+  socket.data.username = null;
 
-  socket.on("joinDoc", (docId) => {
-    currentDoc = docId;
+  // joinDoc expects either: joinDoc(docId) or joinDoc({ docId, username })
+  socket.on("joinDoc", (payload) => {
+    let docId;
+    let username;
+    if (typeof payload === "string") {
+      docId = payload;
+    } else if (payload && typeof payload === "object") {
+      docId = payload.docId;
+      username = (payload.username || "").trim();
+    }
 
+    if (!docId) return socket.emit("errorMsg", "docId faltante al unir.");
+
+    // ensure doc exists
     if (!documents.has(docId)) {
       const now = new Date().toISOString();
       documents.set(docId, {
@@ -240,6 +255,9 @@ io.on("connection", (socket) => {
         expires_at: null,
         authors: [],
         content: "",
+        activity: {},
+        events: [],
+        participants: new Map(),
         log: [],
         settings: { read_only: false, encrypted: false }
       });
@@ -247,26 +265,43 @@ io.on("connection", (socket) => {
 
     const doc = documents.get(docId);
 
-    // Asignar usuario aleatorio si no tiene
-    // build a Set of existing authors to avoid duplicates
-    const existing = new Set(doc.authors || []);
-    assignedUser = generateRandomName(existing);
-    doc.authors = Array.from(new Set([...(doc.authors || []), assignedUser]));
+    // if username missing => fallback to "Anónimo-<short>"
+    if (!username) {
+      username = `Anónimo-${Math.random().toString(36).slice(2,7)}`;
+    }
 
-    // Registrar en log la unión
+    // store in socket
+    socket.data.currentDoc = docId;
+    socket.data.username = username;
+
+    // Add participant
+    doc.participants.set(socket.id, username);
+
+    // Add to authors historic
+    if (!doc.authors.includes(username)) {
+      doc.authors.push(username);
+    }
+
+    // Update activity: joins
+    doc.activity = doc.activity || {};
+    doc.activity[username] = doc.activity[username] || { edits: 0, joins: 0, disconnects: 0, lastTs: null };
+    doc.activity[username].joins = (doc.activity[username].joins || 0) + 1;
+    doc.activity[username].lastTs = new Date().toISOString();
+
+    // Add an explicit event for join
     const ts = new Date().toISOString();
-    doc.log = doc.log || [];
-    doc.log.push({ timestamp: ts, entry: `${assignedUser} se unió al documento` });
+    doc.events = doc.events || [];
+    doc.events.push({ timestamp: ts, entry: `${username} se unió al documento` });
 
-    // guardar
     documents.set(docId, doc);
 
     socket.join(docId);
 
-    // Enviar la asignación de usuario al cliente
-    socket.emit("assignedUser", assignedUser);
+    // Emit participants list and meta to everyone in room
+    const participants = Array.from(doc.participants.values());
+    io.to(docId).emit("participants", participants);
 
-    // Enviar meta y contenido inicial
+    // Emit docMeta to the client that joined
     socket.emit("docMeta", {
       docId,
       title: doc.title,
@@ -275,49 +310,95 @@ io.on("connection", (socket) => {
       settings: doc.settings
     });
 
-    // Enviamos contenido actual (texto plano)
+    // Send current content
     socket.emit("update", doc.content);
   });
 
-  // recibir ediciones: puede ser (string) content o { user, content }
+  // recibir ediciones: payload should be { user, content }
   socket.on("edit", (payload) => {
+    const currentDoc = socket.data.currentDoc;
+    const username = (payload && payload.user) || socket.data.username || "Anónimo";
+    const content = (payload && payload.content) || (typeof payload === "string" ? payload : "");
+
     if (!currentDoc) return;
 
     const doc = documents.get(currentDoc);
-    let user = assignedUser || "anon";
-    let content = "";
+    if (!doc) return;
 
-    if (typeof payload === "string") {
-      content = payload;
-    } else if (payload && typeof payload === "object") {
-      content = payload.content ?? "";
-      user = payload.user || user;
-    }
-
-    // Update content and log
-    const ts = new Date().toISOString();
+    // Update content
     doc.content = content;
-    doc.authors = Array.from(new Set([...(doc.authors || []), user]));
-    doc.log = doc.log || [];
-    doc.log.push({ timestamp: ts, entry: `${user} editó el documento` });
 
-    // Save
+    // Update activity counters
+    doc.activity = doc.activity || {};
+    doc.activity[username] = doc.activity[username] || { edits: 0, joins: 0, disconnects: 0, lastTs: null };
+    doc.activity[username].edits = (doc.activity[username].edits || 0) + 1;
+    doc.activity[username].lastTs = new Date().toISOString();
+
+    // Persist change
     documents.set(currentDoc, doc);
 
-    // Broadcast to others in the doc room
+    // Broadcast updated content and optionally broadcast updated summarized log/meta
     socket.to(currentDoc).emit("update", content);
+
+    // Broadcast updated participants and a summarized activity snapshot (optional)
+    const participants = Array.from(doc.participants.values());
+    io.to(currentDoc).emit("participants", participants);
+
+    // Also emit a small activity summary for UI (user -> counts)
+    const activitySnapshot = {};
+    Object.keys(doc.activity || {}).forEach(u => {
+      activitySnapshot[u] = {
+        edits: doc.activity[u].edits || 0,
+        joins: doc.activity[u].joins || 0,
+        disconnects: doc.activity[u].disconnects || 0,
+        lastTs: doc.activity[u].lastTs || null
+      };
+    });
+    io.to(currentDoc).emit("activitySnapshot", activitySnapshot);
   });
 
   socket.on("disconnect", () => {
-    // opción: registrar en log la desconexión (no obligatorio)
-    if (currentDoc && assignedUser) {
+    const currentDoc = socket.data.currentDoc;
+    const username = socket.data.username;
+
+    if (currentDoc && documents.has(currentDoc)) {
       const doc = documents.get(currentDoc);
-      if (doc) {
-        const ts = new Date().toISOString();
-        doc.log = doc.log || [];
-        doc.log.push({ timestamp: ts, entry: `${assignedUser} se desconectó` });
-        documents.set(currentDoc, doc);
+
+      // Remove participant
+      if (doc.participants && doc.participants.has(socket.id)) {
+        doc.participants.delete(socket.id);
       }
+
+      // Update activity disconnect
+      if (username) {
+        doc.activity = doc.activity || {};
+        doc.activity[username] = doc.activity[username] || { edits: 0, joins: 0, disconnects: 0, lastTs: null };
+        doc.activity[username].disconnects = (doc.activity[username].disconnects || 0) + 1;
+        doc.activity[username].lastTs = new Date().toISOString();
+
+        // Add an explicit event
+        doc.events = doc.events || [];
+        doc.events.push({ timestamp: new Date().toISOString(), entry: `${username} se desconectó` });
+      }
+
+      // Save
+      documents.set(currentDoc, doc);
+
+      // Emit updated participants
+      const participants = Array.from(doc.participants.values());
+      io.to(currentDoc).emit("participants", participants);
+
+      // Emit activity snapshot
+      const activitySnapshot = {};
+      Object.keys(doc.activity || {}).forEach(u => {
+        activitySnapshot[u] = {
+          edits: doc.activity[u].edits || 0,
+          joins: doc.activity[u].joins || 0,
+          disconnects: doc.activity[u].disconnects || 0,
+          lastTs: doc.activity[u].lastTs || null
+        };
+      });
+      io.to(currentDoc).emit("activitySnapshot", activitySnapshot);
     }
   });
 });
