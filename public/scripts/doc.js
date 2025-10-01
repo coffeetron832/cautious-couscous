@@ -18,4 +18,10 @@ editor.addEventListener("input", () => {
 });
 
 // Mostrar link del documento actual
-document.getElementById("docLink").textContent = window.location.href;
+document.addEventListener("DOMContentLoaded", () => {
+  const linkElement = document.getElementById("docLink");
+  if (linkElement) {
+    linkElement.textContent = window.location.href;
+  }
+});
+
